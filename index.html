@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Censo Nacional dos Adeptos da Culinária Japonesa</title>
+    <!-- Tailwind compilado (sem aviso do CDN). Regenerar após mudar classes: npm run build:css -->
+    <link rel="stylesheet" href="tailwind-built.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+        body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; }
+        .font-oswald { font-family: 'Oswald', sans-serif; }
+        
+        .hero-bg {
+            background-color: #fdfaf5;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .banner-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 8px solid #bc002d;
+        }
+
+        .btn-click-aqui {
+            background-color: #1a1a1a;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-click-aqui:hover {
+            transform: scale(1.05);
+            background-color: #333;
+        }
+
+        .step-transition {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .admin-future-bg {
+            background:
+                radial-gradient(circle at 18% 15%, rgba(14, 165, 233, 0.14), transparent 34%),
+                radial-gradient(circle at 82% 10%, rgba(99, 102, 241, 0.14), transparent 34%),
+                linear-gradient(140deg, #f8fafc 0%, #eef2ff 45%, #f1f5f9 100%);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-future-bg::before {
+            content: "";
+            position: absolute;
+            inset: -30% -20% auto auto;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+            border-color: rgba(148, 163, 184, 0.9);
+        }
+
+        .neon-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neon-card::after {
+            content: "";
+            position: absolute;
+            inset: -50% -100%;
+            background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.25) 50%, transparent 80%);
+            transform: translateX(-100%);
+            animation: shimmer 4.5s linear infinite;
+            pointer-events: none;
+        }
+
+        .fade-up {
+            animation: fadeUp .5s ease both;
+        }
+
+        .fade-up-delay {
+            animation: fadeUp .75s ease both;
+        }
+
+        .data-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .data-bar > span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 55%, #6366f1 100%);
+            animation: growBar .9s ease both;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #2563eb;
+            box-shadow: 0 0 0 rgba(37, 99, 235, 0.8);
+            animation: pulseDot 1.8s infinite;
+        }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes growBar {
+            from { width: 0; }
+        }
+
+        @keyframes pulseDot {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+        }
+
+        .kpi-card {
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 1.1rem;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            transition: all .25s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.12);
+            border-color: #cbd5e1;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .soft-grid {
+            background-image: linear-gradient(to right, rgba(148,163,184,.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,.14) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <div id="app">
+        <!-- O conteúdo será injetado pelo JavaScript -->
+    </div>
+
+    <script>
+        // Configurações Iniciais
+        const ADMIN_PASSWORD = "Marcello";
+        /**
+         * Conexão Google Apps Script ↔ pasta do Drive (JSON).
+         * Chave da implantação Web App (trecho do caminho /macros/s/…/exec):
+         */
+        const APPS_SCRIPT_DEPLOYMENT_KEY = 'AKfycbxrRcX7AKTPtz68miTOEHeG6woE3fJMsEve_76BLTGSS4uS4wBCs_-L5N1QwB6L4Q7q';
+        /** ID da pasta Censo_Japones_2026 — use em configurarNaPasta("...") no editor do Apps Script, uma vez. */
+        /** Mesma pasta raiz que ROOT_FOLDER_ID no Code.gs (SANEGESTAO + JSON do censo). */
+        const DRIVE_FOLDER_ID = '1kz9CGNas03tiQzUUu34vraQFhimWkPgJ';
+        /**
+         * URL do Web App (termina em /exec). Para o público e GitHub Pages — NÃO use o link da Biblioteca
+         * (…/macros/library/d/…), que serve para importar código em outro projeto.
+         */
+        const WEB_APP_URL = 'https://script.google.com/macros/s/' + APPS_SCRIPT_DEPLOYMENT_KEY + '/exec';
+        /** Pasta no Drive onde ficam os arquivos JSON (incl. rotação *_part002.json etc.). */
+        const DRIVE_CENSO_FOLDER_URL = 'https://drive.google.com/drive/folders/' + DRIVE_FOLDER_ID + '?usp=drive_link';
+        /** Link útil: mesma pasta (os .json são criados dentro dela pelo Code.gs). */
+        const DRIVE_JSON_FILE_URL = DRIVE_CENSO_FOLDER_URL;
+        /** Logo oficial AACJ (arquivo local publicado junto do index.html). */
+        const AACJ_LOGO_SRC = 'logo 01.jpeg';
+        /** Arte principal da tela inicial. */
+        const HOME_BANNER_SRC = 'app.jpeg';
+        
+        // Estado Global
+        let state = {
+            currentView: 'home', 
+            adminTab: 'respostas', // respostas ou configuracoes
+            responses: JSON.parse(localStorage.getItem('censo_responses') || '[]'),
+            adminFilters: {
+                search: '',
+                cidade: '',
+                estado: '',
+                perfil: '',
+                presente: ''
+            },
+            adminMailer: {
+                selectedIds: {},
+                ebookFitness: null,
+                ebookSushi: null,
+                senderCompany: 'AACJ - Associação dos Adeptos da Culinária Japonesa',
+                senderDisplayName: 'Equipe AACJ',
+                sending: false
+            },
+            driveConfig: JSON.parse(localStorage.getItem('censo_drive_config') || '{"folder": "Censo_Japones_2026", "filename": "data.json", "autoSync": true}'),
+            formData: {
+                querPresente: '',
+                nomeCompleto: '',
+                cpf: '',
+                email: '',
+                receberBrindeVia: '',
+                whatsapp: '',
+                cidade: '',
+                estado: '',
+                idade: '',
+                relacao: '',
+                premioDesejado: '',
+                frequencia: '',
+                consumo: [],
+                consumoOutros: ''
+            },
+            formSubmitting: false,
+            isOnline: navigator.onLine,
+            adminSyncLoading: false,
+            adminBackendError: null
+        };
+
+        const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+
+        /** True quando o HTML roda como Web App (HtmlService) — google.script.run disponível */
+        function isAppsScript() {
+            try {
+                return typeof google !== 'undefined' && google.script && google.script.run;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        /** Formulário estático (ex.: GitHub Pages): usa a mesma URL /exec com GET JSONP + POST append */
+        function useRemoteBackend() {
+            return !isAppsScript() && typeof WEB_APP_URL === 'string' && WEB_APP_URL.indexOf('script.google.com') !== -1;
+        }
+
+        /** Mensagem quando falha leitura remota (iframe + JSONP). */
+        function getRemoteLoadErrorText() {
+            return (
+                'Falha ao contactar o Google Apps Script.\n\n' +
+                'Checklist:\n' +
+                '• script.google.com → Implantar → Gerenciar implantações → Web App → Nova versão (após colar o Code.gs).\n' +
+                '• Executar como: você · Acesso: qualquer pessoa.\n' +
+                '• No editor: configurarNaPasta("' + DRIVE_FOLDER_ID + '") ou configurarPrimeiraVez(), depois Nova versão.\n' +
+                '• Teste no navegador (deve ser código JS ou página em branco que envia dados, não o formulário longo):\n  ' +
+                WEB_APP_URL + '?action=getAll&callback=console.log\n' +
+                '  ou página mínima:\n  ' +
+                WEB_APP_URL + '?action=getAll&fmt=iframe\n\n' +
+                'Se só abrir o formulário do censo, a implantação não tem o Code.gs com doGet(action=getAll).'
+            );
+        }
+
+        function decodeBase64Utf8(b64) {
+            var bin = atob(b64);
+            var len = bin.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = bin.charCodeAt(i);
+            }
+            if (typeof TextDecoder !== 'undefined') {
+                return new TextDecoder('utf-8').decode(bytes);
+            }
+            return decodeURIComponent(escape(bin));
+        }
+
+        /** Iframe invisível + postMessage (funciona melhor no GitHub Pages que JSONP). */
+        function loadResponsesFromRemoteIframe(onDone) {
+            var iframe = document.createElement('iframe');
+            var doneOnce = false;
+            function finish(rows, err) {
+                if (doneOnce) {
+                    return;
+                }
+                doneOnce = true;
+                try {
+                    clearTimeout(tid);
+                } catch (x) { /* ignore */ }
+                try {
+                    window.removeEventListener('message', onMsg);
+                } catch (x) { /* ignore */ }
+                if (iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+                onDone(rows, err);
+            }
+            function onMsg(ev) {
+                var d = ev.data;
+                if (!d || d.source !== 'censo-drive') {
+                    return;
+                }
+                if (d.error && !d.b64) {
+                    finish(
+                        null,
+                        d.error +
+                            '\n\nSe aparecer erro de configuração, no editor execute uma vez configurarPrimeiraVez() (raiz do Drive) ou configurarNaPasta("' +
+                            DRIVE_FOLDER_ID +
+                            '") e publique nova versão do Web App.'
+                    );
+                    return;
+                }
+                if (d.b64) {
+                    try {
+                        var inner = JSON.parse(decodeBase64Utf8(d.b64));
+                        if (inner && typeof inner.error === 'string') {
+                            finish(
+                                null,
+                                inner.error +
+                                    '\n\nSe aparecer erro de configuração, no editor execute uma vez configurarPrimeiraVez() (raiz do Drive) ou configurarNaPasta("' +
+                                    DRIVE_FOLDER_ID +
+                                    '") e publique nova versão do Web App.'
+                            );
+                        } else if (inner && inner.payload !== undefined) {
+                            finish(Array.isArray(inner.payload) ? inner.payload : [], null);
+                        } else {
+                            finish([], null);
+                        }
+                    } catch (ex) {
+                        finish(null, String(ex));
+                    }
+                }
+            }
+            var tid = setTimeout(function () {
+                finish(null, 'iframe-timeout');
+            }, 20000);
+            window.addEventListener('message', onMsg);
+            iframe.setAttribute('title', 'Sincronização Drive');
+            iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+            var sep = WEB_APP_URL.indexOf('?') >= 0 ? '&' : '?';
+            var origin = '*';
+            try {
+                var o = window.location.origin;
+                if (o && o !== 'null' && o !== 'file://') {
+                    origin = o;
+                }
+            } catch (e2) { /* keep * */ }
+            iframe.src =
+                WEB_APP_URL +
+                sep +
+                'action=getAll&fmt=iframe&origin=' +
+                encodeURIComponent(origin) +
+                '&_=' +
+                Date.now();
+            document.body.appendChild(iframe);
+        }
+
+        /** Fallback: JSONP (GET ?callback=). */
+        function loadResponsesFromRemoteJsonp(onDone) {
+            var cbName = 'censoJsonp' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+            var script = document.createElement('script');
+            var doneOnce = false;
+            function finish(rows, err) {
+                if (doneOnce) {
+                    return;
+                }
+                doneOnce = true;
+                try {
+                    clearTimeout(timeoutId);
+                } catch (x) { /* ignore */ }
+                onDone(rows, err);
+            }
+            var timeoutId = setTimeout(function () {
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                finish(null, getRemoteLoadErrorText() + '\n\n(JSONP — timeout.)');
+            }, 25000);
+            window[cbName] = function (data) {
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                if (data && typeof data.error === 'string') {
+                    finish(
+                        null,
+                        data.error +
+                            '\n\nSe aparecer erro de configuração, no editor execute uma vez configurarPrimeiraVez() (raiz do Drive) ou configurarNaPasta("' +
+                            DRIVE_FOLDER_ID +
+                            '") e publique nova versão do Web App.'
+                    );
+                } else if (Array.isArray(data)) {
+                    finish(data, null);
+                } else {
+                    finish([], null);
+                }
+            };
+            script.async = true;
+            script.onerror = function () {
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                finish(null, getRemoteLoadErrorText() + '\n\n(JSONP — erro de rede ou script bloqueado.)');
+            };
+            var sep = WEB_APP_URL.indexOf('?') >= 0 ? '&' : '?';
+            script.src =
+                WEB_APP_URL +
+                sep +
+                'action=getAll&callback=' +
+                encodeURIComponent(cbName) +
+                '&_=' +
+                Date.now();
+            document.head.appendChild(script);
+        }
+
+        /** GitHub Pages: tenta iframe primeiro; se der timeout, tenta JSONP. */
+        function loadResponsesFromRemote(onDone) {
+            loadResponsesFromRemoteIframe(function (rows, err) {
+                if (err === 'iframe-timeout') {
+                    loadResponsesFromRemoteJsonp(onDone);
+                    return;
+                }
+                onDone(rows, err);
+            });
+        }
+
+        /** Mensagem legível quando o Apps Script devolve erro no withFailureHandler */
+        function scriptRunError(err) {
+            if (err == null) return 'Erro desconhecido.';
+            if (typeof err === 'string') return err;
+            if (err.message) return String(err.message);
+            try {
+                return JSON.stringify(err);
+            } catch (e) {
+                return String(err);
+            }
+        }
+
+        // Funções de Navegação
+        function setView(view) {
+            state.currentView = view;
+            if (view === 'admin' && isAppsScript()) {
+                state.adminBackendError = null;
+                state.adminSyncLoading = true;
+                render();
+                google.script.run
+                    .withSuccessHandler(function (rows) {
+                        state.adminSyncLoading = false;
+                        state.responses = rows || [];
+                        try {
+                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                        } catch (e) { /* ignore */ }
+                        render();
+                        window.scrollTo(0, 0);
+                    })
+                    .withFailureHandler(function (err) {
+                        state.adminSyncLoading = false;
+                        state.adminBackendError = scriptRunError(err);
+                        render();
+                        window.scrollTo(0, 0);
+                    })
+                    .getAllResponses();
+                return;
+            }
+            if (view === 'admin' && useRemoteBackend()) {
+                state.adminBackendError = null;
+                state.adminSyncLoading = true;
+                render();
+                loadResponsesFromRemote(function (rows, err) {
+                    state.adminSyncLoading = false;
+                    if (err) {
+                        state.adminBackendError = err;
+                    } else {
+                        state.responses = rows || [];
+                        try {
+                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                        } catch (e) { /* ignore */ }
+                        state.adminBackendError = null;
+                    }
+                    render();
+                    window.scrollTo(0, 0);
+                });
+                return;
+            }
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function setAdminTab(tab) {
+            state.adminTab = tab;
+            render();
+        }
+
+        /** Recarrega respostas do JSON no Drive (Web App ou GitHub Pages + mesma URL /exec) */
+        function reloadAdminResponses() {
+            if (isAppsScript()) {
+                state.adminBackendError = null;
+                state.adminSyncLoading = true;
+                render();
+                google.script.run
+                    .withSuccessHandler(function (rows) {
+                        state.adminSyncLoading = false;
+                        state.responses = rows || [];
+                        try {
+                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                        } catch (e) { /* ignore */ }
+                        render();
+                    })
+                    .withFailureHandler(function (err) {
+                        state.adminSyncLoading = false;
+                        state.adminBackendError = scriptRunError(err);
+                        render();
+                    })
+                    .getAllResponses();
+                return;
+            }
+            if (useRemoteBackend()) {
+                state.adminBackendError = null;
+                state.adminSyncLoading = true;
+                render();
+                loadResponsesFromRemote(function (rows, err) {
+                    state.adminSyncLoading = false;
+                    if (err) {
+                        state.adminBackendError = err;
+                    } else {
+                        state.responses = rows || [];
+                        try {
+                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                        } catch (e) { /* ignore */ }
+                        state.adminBackendError = null;
+                    }
+                    render();
+                });
+            }
+        }
+
+        // Handlers de Dados
+        function handleInputChange(field, value) {
+            state.formData[field] = value;
+            if (field === 'receberBrindeVia' && value !== 'WhatsApp') {
+                state.formData.whatsapp = '';
+            }
+        }
+
+        function handleConfigChange(field, value) {
+            state.driveConfig[field] = value;
+            localStorage.setItem('censo_drive_config', JSON.stringify(state.driveConfig));
+        }
+
+        function toggleCheckbox(field, value) {
+            const list = state.formData[field];
+            const index = list.indexOf(value);
+            if (index === -1) list.push(value);
+            else {
+                list.splice(index, 1);
+                if (field === 'consumo' && value === 'Outros') {
+                    state.formData.consumoOutros = '';
+                }
+            }
+            render();
+        }
+
+        function saveResponse() {
+            if (state.formSubmitting) {
+                return;
+            }
+            if (String(state.formData.querPresente || '').toLowerCase() === 'sim') {
+                const via = String(state.formData.receberBrindeVia || '').trim();
+                if (!via) {
+                    alert('Escolha como deseja receber o brinde: E-mail ou WhatsApp.');
+                    return;
+                }
+                if (via === 'WhatsApp' && !normalizeWhatsAppNumber(state.formData.whatsapp)) {
+                    alert('Informe um número de WhatsApp válido para receber o brinde.');
+                    return;
+                }
+                if (via === 'E-mail' && !String(state.formData.email || '').includes('@')) {
+                    alert('Informe um e-mail válido para receber o brinde.');
+                    return;
+                }
+            }
+            if (state.formData.consumo.includes('Outros') && !String(state.formData.consumoOutros || '').trim()) {
+                alert('Você marcou "Outros". Digite qual item deseja informar.');
+                return;
+            }
+            const consumoNormalizado = (state.formData.consumo || []).map(function (item) {
+                if (item === 'Outros') {
+                    return String(state.formData.consumoOutros || '').trim() || 'Outros';
+                }
+                return item;
+            });
+            const newResponse = {
+                ...state.formData,
+                consumo: consumoNormalizado,
+                id: Date.now(),
+                data: new Date().toLocaleString('pt-BR')
+            };
+            state.formSubmitting = true;
+            render();
+
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(function () {
+                        state.formSubmitting = false;
+                        state.responses.push(newResponse);
+                        try {
+                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                        } catch (e) { /* ignore */ }
+                        setView('success');
+                        state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+                    })
+                    .withFailureHandler(function (err) {
+                        state.formSubmitting = false;
+                        render();
+                        alert('Não foi possível salvar no arquivo JSON.\n\n' + scriptRunError(err) + '\n\nConfira no Apps Script: Implantação = Executar como EU · autorize o Drive · rode no editor a função diagnostico().');
+                    })
+                    .appendResponse(newResponse);
+                return;
+            }
+
+            if (useRemoteBackend()) {
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'append', payload: newResponse })
+                }).then(function () {
+                    state.formSubmitting = false;
+                    state.responses.push(newResponse);
+                    try {
+                        localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                    } catch (e) { /* ignore */ }
+                    setView('success');
+                    state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+                }).catch(function (err) {
+                    state.formSubmitting = false;
+                    render();
+                    alert('Não foi possível enviar a resposta.\n\n' + (err && err.message ? err.message : String(err)) + '\n\nVerifique sua internet e se a URL do Web App em index.html está correta.');
+                });
+                return;
+            }
+
+            state.formSubmitting = false;
+            state.responses.push(newResponse);
+            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+
+            setView('success');
+            state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+        }
+
+        // Exportação
+        function getDashboardMetrics(rowsInput) {
+            const rows = Array.isArray(rowsInput) ? rowsInput : state.responses;
+            const metrics = {
+                total: rows.length,
+                comPresente: 0,
+                semPresente: 0,
+                emailsValidos: 0,
+                nomesInformados: 0,
+                cidadeMap: {},
+                perfilMap: {},
+                estadoMap: {},
+                idadeMap: {},
+                premioMap: {},
+                consumoMap: {}
+            };
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i] || {};
+                const quer = String(r.querPresente || '').toLowerCase() === 'sim';
+                if (quer) metrics.comPresente += 1;
+                else metrics.semPresente += 1;
+                if (String(r.email || '').includes('@')) metrics.emailsValidos += 1;
+                if (String(r.nomeCompleto || r.nome || '').trim()) metrics.nomesInformados += 1;
+
+                const cidade = String(r.cidade || 'Não informado').trim();
+                const perfil = String(r.relacao || 'Não informado').trim();
+                const estado = String(r.estado || 'Não informado').trim();
+                const idade = String(r.idade || 'Não informado').trim();
+                const premio = String(r.premioDesejado || 'Não informado').trim();
+                metrics.cidadeMap[cidade] = (metrics.cidadeMap[cidade] || 0) + 1;
+                metrics.perfilMap[perfil] = (metrics.perfilMap[perfil] || 0) + 1;
+                metrics.estadoMap[estado] = (metrics.estadoMap[estado] || 0) + 1;
+                metrics.idadeMap[idade] = (metrics.idadeMap[idade] || 0) + 1;
+                metrics.premioMap[premio] = (metrics.premioMap[premio] || 0) + 1;
+
+                const consumoLista = Array.isArray(r.consumo) ? r.consumo : [];
+                for (let j = 0; j < consumoLista.length; j++) {
+                    const item = String(consumoLista[j] || '').trim();
+                    if (!item) continue;
+                    metrics.consumoMap[item] = (metrics.consumoMap[item] || 0) + 1;
+                }
+            }
+            return metrics;
+        }
+
+        function topEntries(map, limit) {
+            return Object.entries(map || {}).sort((a, b) => b[1] - a[1]).slice(0, limit || 5);
+        }
+
+        function pct(part, total) {
+            if (!total) return 0;
+            return Math.round((Number(part || 0) / Number(total)) * 100);
+        }
+
+        function donutGradient(values, colors) {
+            const nums = (values || []).map(v => Math.max(0, Number(v || 0)));
+            const total = nums.reduce((a, b) => a + b, 0);
+            if (!total) {
+                return 'conic-gradient(#e2e8f0 0% 100%)';
+            }
+            let start = 0;
+            const parts = [];
+            for (let i = 0; i < nums.length; i++) {
+                const p = (nums[i] / total) * 100;
+                const end = start + p;
+                const color = colors[i % colors.length];
+                parts.push(`${color} ${start.toFixed(2)}% ${end.toFixed(2)}%`);
+                start = end;
+            }
+            return `conic-gradient(${parts.join(',')})`;
+        }
+
+        function getFilteredResponses() {
+            const f = state.adminFilters || {};
+            const search = String(f.search || '').toLowerCase().trim();
+            return state.responses.filter(r => {
+                const nome = String(r.nomeCompleto || r.nome || '').toLowerCase();
+                const email = String(r.email || '').toLowerCase();
+                const cidade = String(r.cidade || '');
+                const estado = String(r.estado || '');
+                const perfil = String(r.relacao || '');
+                const presente = String(r.querPresente || '');
+                if (search && !(nome.includes(search) || email.includes(search))) return false;
+                if (f.cidade && cidade !== f.cidade) return false;
+                if (f.estado && estado !== f.estado) return false;
+                if (f.perfil && perfil !== f.perfil) return false;
+                if (f.presente && presente !== f.presente) return false;
+                return true;
+            });
+        }
+
+        function setAdminFilter(field, value) {
+            state.adminFilters[field] = value;
+            render();
+        }
+
+        function clearAdminFilters() {
+            state.adminFilters = { search: '', cidade: '', estado: '', perfil: '', presente: '' };
+            render();
+        }
+
+        function toggleGiftRecipient(id, checked) {
+            if (checked) state.adminMailer.selectedIds[String(id)] = true;
+            else delete state.adminMailer.selectedIds[String(id)];
+            render();
+        }
+
+        function selectAllGiftRecipientsFromFiltered() {
+            const eligible = getFilteredResponses().filter(r => String(r.querPresente || '').toLowerCase() === 'sim' && String(r.email || '').includes('@'));
+            const next = {};
+            for (let i = 0; i < eligible.length; i++) {
+                next[String(eligible[i].id)] = true;
+            }
+            state.adminMailer.selectedIds = next;
+            render();
+        }
+
+        function clearGiftSelection() {
+            state.adminMailer.selectedIds = {};
+            render();
+        }
+
+        function formatFileSize(bytes) {
+            const n = Number(bytes || 0);
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+            return (n / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function loadFileAsAttachment(file, onDone) {
+            if (!file) {
+                onDone(null);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function () {
+                try {
+                    const result = String(reader.result || '');
+                    const base64 = result.split(',')[1] || '';
+                    onDone({
+                        name: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        base64: base64,
+                        size: Number(file.size || 0)
+                    });
+                } catch (_) {
+                    onDone(null);
+                }
+            };
+            reader.onerror = function () { onDone(null); };
+            reader.readAsDataURL(file);
+        }
+
+        function handleEbookUpload(kind, input) {
+            const file = input && input.files && input.files[0] ? input.files[0] : null;
+            loadFileAsAttachment(file, function (attachment) {
+                if (kind === 'fitness') state.adminMailer.ebookFitness = attachment;
+                if (kind === 'sushi') state.adminMailer.ebookSushi = attachment;
+                render();
+            });
+        }
+
+        function buildGiftRecipientsFromFiltered() {
+            const filtered = getFilteredResponses();
+            const selected = state.adminMailer.selectedIds || {};
+            return filtered
+                .filter(r => selected[String(r.id)])
+                .filter(r => String(r.querPresente || '').toLowerCase() === 'sim');
+        }
+
+        function normalizeWhatsAppNumber(raw) {
+            const digits = String(raw || '').replace(/\D+/g, '');
+            if (!digits) return '';
+            if (digits.length === 10 || digits.length === 11) return '55' + digits;
+            return digits;
+        }
+
+        function buildEmailRecipientsFromSelection() {
+            return buildGiftRecipientsFromFiltered().filter(r => {
+                const via = String(r.receberBrindeVia || '').toLowerCase();
+                return via !== 'whatsapp' && String(r.email || '').includes('@');
+            });
+        }
+
+        function buildWhatsAppRecipientsFromSelection() {
+            return buildGiftRecipientsFromFiltered().filter(r => {
+                const via = String(r.receberBrindeVia || '').toLowerCase();
+                return via === 'whatsapp' && normalizeWhatsAppNumber(r.whatsapp).length >= 12;
+            });
+        }
+
+        function sendGiftEmailsFromAdmin() {
+            const recipients = buildEmailRecipientsFromSelection();
+            if (!recipients.length) {
+                alert('Selecione pelo menos 1 pessoa com entrega por E-mail e e-mail válido.');
+                return;
+            }
+            if (!state.adminMailer.ebookFitness && !state.adminMailer.ebookSushi) {
+                alert('Adicione pelo menos 1 e-book (Fitness ou Sushi/Sashimi) antes de enviar.');
+                return;
+            }
+            if (!String(state.adminMailer.senderCompany || '').trim()) {
+                alert('Preencha o nome da empresa/remetente antes de enviar.');
+                return;
+            }
+            const payload = {
+                action: 'sendGiftEmails',
+                recipients: recipients.map(r => ({
+                    id: r.id,
+                    nome: r.nomeCompleto || r.nome || '',
+                    email: r.email || '',
+                    whatsapp: r.whatsapp || '',
+                    receberBrindeVia: r.receberBrindeVia || '',
+                    premioDesejado: r.premioDesejado || ''
+                })),
+                attachments: {
+                    fitness: state.adminMailer.ebookFitness ? {
+                        name: state.adminMailer.ebookFitness.name,
+                        mimeType: state.adminMailer.ebookFitness.mimeType,
+                        base64: state.adminMailer.ebookFitness.base64
+                    } : null,
+                    sushi: state.adminMailer.ebookSushi ? {
+                        name: state.adminMailer.ebookSushi.name,
+                        mimeType: state.adminMailer.ebookSushi.mimeType,
+                        base64: state.adminMailer.ebookSushi.base64
+                    } : null
+                },
+                mailOptions: {
+                    senderCompany: String(state.adminMailer.senderCompany || '').trim(),
+                    senderDisplayName: String(state.adminMailer.senderDisplayName || '').trim()
+                }
+            };
+
+            state.adminMailer.sending = true;
+            render();
+
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(function (res) {
+                        state.adminMailer.sending = false;
+                        render();
+                        alert('Envio concluído.\n\nEnviados: ' + (res && res.sent ? res.sent : 0) + '\nIgnorados: ' + (res && res.skipped ? res.skipped : 0));
+                    })
+                    .withFailureHandler(function (err) {
+                        state.adminMailer.sending = false;
+                        render();
+                        alert('Falha no envio de brindes.\n\n' + scriptRunError(err));
+                    })
+                    .sendGiftEmails(payload.recipients, payload.attachments, payload.mailOptions);
+                return;
+            }
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            }).then(function () {
+                state.adminMailer.sending = false;
+                render();
+                alert('Solicitação de envio enviada ao backend. Atualize o dashboard em alguns segundos.');
+            }).catch(function (err) {
+                state.adminMailer.sending = false;
+                render();
+                alert('Falha ao solicitar envio dos brindes.\n\n' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        async function sendGiftWhatsAppFromAdmin() {
+            const recipients = buildWhatsAppRecipientsFromSelection();
+            if (!recipients.length) {
+                alert('Selecione pelo menos 1 pessoa com entrega por WhatsApp e número válido.');
+                return;
+            }
+            const lines = [];
+            for (let i = 0; i < recipients.length; i++) {
+                const r = recipients[i];
+                const nome = r.nomeCompleto || r.nome || 'Participante';
+                const premio = r.premioDesejado || 'seu brinde digital';
+                const fone = normalizeWhatsAppNumber(r.whatsapp);
+                const msg =
+`Olá, ${nome}! Arigatou pelo seu cadastro no Censo AACJ.
+
+Seu presente selecionado foi: ${premio}.
+
+Estamos enviando seu material agora.`;
+                const waUrl = 'https://wa.me/' + fone + '?text=' + encodeURIComponent(msg);
+                lines.push(`${nome} | ${fone} | ${waUrl}`);
+                if (i < 5) {
+                    window.open(waUrl, '_blank');
+                }
+            }
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(lines.join('\n'));
+                }
+            } catch (_) { /* ignore */ }
+            alert('Links de WhatsApp gerados. Abrimos até 5 conversas automaticamente e copiamos a lista completa.\n\nObservação: o anexo PDF precisa ser enviado manualmente no WhatsApp Web após abrir a conversa.');
+        }
+
+        async function imageToDataUrl(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve(canvas.toDataURL('image/jpeg', 0.9));
+                    } catch (_) {
+                        resolve(null);
+                    }
+                };
+                img.onerror = function () { resolve(null); };
+                img.src = src;
+            });
+        }
+
+        function exportExcel() {
+            const m = getDashboardMetrics();
+            const rows = state.responses.map((r, i) => ({
+                '#': i + 1,
+                Nome: r.nomeCompleto || r.nome || '',
+                CPF: r.cpf || '',
+                Email: r.email || '',
+                Cidade: r.cidade || '',
+                Estado: r.estado || '',
+                Idade: r.idade || '',
+                Perfil: r.relacao || '',
+                Frequencia: r.frequencia || '',
+                Presente: r.querPresente || '',
+                Premio: r.premioDesejado || '',
+                Data: r.data || ''
+            }));
+            const resumo = [
+                { Indicador: 'Total de respostas', Valor: m.total },
+                { Indicador: 'Quer presente', Valor: m.comPresente },
+                { Indicador: 'Sem presente', Valor: m.semPresente },
+                { Indicador: 'E-mails válidos', Valor: m.emailsValidos },
+                { Indicador: 'Nomes informados', Valor: m.nomesInformados },
+                { Indicador: 'Estados únicos', Valor: Object.keys(m.estadoMap).length }
+            ];
+            const ranking = topEntries(m.cidadeMap, 10).map((item, i) => ({
+                Posicao: i + 1,
+                Cidade: item[0],
+                Respostas: item[1]
+            }));
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(resumo), "Resumo");
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(ranking), "Ranking_Cidades");
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), "Respostas_Detalhadas");
+            XLSX.writeFile(workbook, "Censo_Culinaria_Japonesa.xlsx");
+        }
+
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const m = getDashboardMetrics();
+            const logoData = await imageToDataUrl(AACJ_LOGO_SRC);
+
+            doc.setFillColor(12, 18, 34);
+            doc.rect(0, 0, 210, 30, 'F');
+            if (logoData) {
+                doc.addImage(logoData, 'JPEG', 10, 6, 26, 18);
+            }
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(15);
+            doc.text("Relatório Oficial - Censo AACJ", 42, 14);
+            doc.setFontSize(9);
+            doc.text("Dashboard futurista | Base japonesa", 42, 20);
+            doc.setTextColor(22, 22, 22);
+
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(10, 35, 190, 20, 3, 3, 'F');
+            doc.setFontSize(10);
+            doc.text(`Total: ${m.total}  |  Quer presente: ${m.comPresente}  |  E-mails válidos: ${m.emailsValidos}`, 14, 46);
+            doc.setDrawColor(230, 230, 230);
+            doc.line(10, 59, 200, 59);
+
+            let y = 66;
+            state.responses.forEach((resp, i) => {
+                if (y > 274) {
+                    doc.addPage();
+                    y = 24;
+                }
+                doc.setFontSize(9);
+                const nome = resp.nomeCompleto || resp.nome || 'Sem nome';
+                const linha1 = `${i + 1}. ${nome} | ${resp.cidade || '-'} / ${resp.estado || '-'} | ${resp.idade || '-'}`;
+                const linha2 = `Perfil: ${resp.relacao || '-'} | Presente: ${resp.querPresente || '-'} | Prêmio: ${resp.premioDesejado || '-'}`;
+                const linha3 = `E-mail: ${resp.email || '-'} | Data: ${resp.data || '-'}`;
+                doc.text(linha1, 10, y);
+                y += 5;
+                doc.setTextColor(90, 90, 90);
+                doc.text(linha2, 10, y);
+                y += 5;
+                doc.text(linha3, 10, y);
+                doc.setTextColor(30, 30, 30);
+                y += 7.5;
+            });
+            doc.save("Relatorio_Censo.pdf");
+        }
+
+        function loginAdmin() {
+            const pass = prompt("Digite a senha administrativa:");
+            if (pass === ADMIN_PASSWORD) {
+                setView('admin');
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        // Componentes
+        function Header() {
+            return `
+                <header class="bg-white border-b px-4 py-1 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="setView('home')">
+                        <img src="${AACJ_LOGO_SRC}" alt="AACJ - Associação dos Adeptos da Culinária Japonesa" class="h-8 w-auto object-contain">
+                    </div>
+                    <div class="flex items-center gap-4">
+                        ${!state.isOnline ? '<span class="text-orange-500 text-xs flex items-center gap-1"><i data-lucide="cloud-off" class="w-3 h-3"></i> Offline</span>' : ''}
+                        <button onclick="loginAdmin()" class="text-gray-500 hover:text-[#bc002d]">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </header>
+            `;
+        }
+
+        function Home() {
+            return `
+                <div class="hero-bg min-h-screen">
+                    <div class="banner-container bg-white shadow-2xl max-w-6xl">
+                        <button onclick="setView('form')" class="block w-full text-left" aria-label="Abrir formulário do censo">
+                            <img src="${HOME_BANNER_SRC}" alt="Banner do Censo Nacional dos Adeptos da Culinária Japonesa. Clique para iniciar o formulário." class="w-full h-auto block">
+                        </button>
+                        <div class="px-4 py-3 md:px-6 bg-[#bc002d] text-white text-center">
+                            <button onclick="setView('form')" class="inline-flex items-center gap-2 font-bold uppercase tracking-wide text-sm md:text-base hover:opacity-90">
+                                <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i>
+                                CLICK AQUI PARA INICIAR AS PERGUNTAS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function Form() {
+            return `
+                <div class="max-w-2xl mx-auto py-12 px-6">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 border-t-8 border-[#bc002d]">
+                        <h2 class="text-3xl font-oswald font-bold mb-8 flex items-center gap-3">
+                            <i data-lucide="clipboard-list" class="text-[#bc002d]"></i>
+                            FORMULÁRIO DO CENSO
+                        </h2>
+                        <div class="space-y-8">
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1. Você quer ganhar um presente grátis?</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['Sim', 'Não'].map(opt => `
+                                        <button onclick="handleInputChange('querPresente', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.querPresente === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            ${state.formData.querPresente === 'Sim' ? `
+                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                                <p class="font-bold text-[#bc002d] text-lg">Você quer ganhar um presente grátis?</p>
+                                <p class="text-sm text-gray-700 mt-1">Insira as informações abaixo e cadastre-se na AACJ - Associação dos Adeptos da Culinária Japonesa.</p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.1 Nome completo</label>
+                                <input type="text" oninput="handleInputChange('nomeCompleto', this.value)" value="${state.formData.nomeCompleto}" placeholder="Digite seu nome completo" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.2 CPF</label>
+                                <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.3 E-mail</label>
+                                <input type="email" oninput="handleInputChange('email', this.value)" value="${state.formData.email}" placeholder="seuemail@exemplo.com" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.4 O que você gostaria de ganhar?</label>
+                                <div class="space-y-2">
+                                    ${['E-Book - Culinária Japonesa Fitness', 'E-Book - Curso básico de Sushi e Sashimi'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="premioDesejado" ${state.formData.premioDesejado === opt ? 'checked' : ''} onchange="handleInputChange('premioDesejado', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.5 Como deseja receber seu brinde?</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['E-mail', 'WhatsApp'].map(opt => `
+                                        <button onclick="handleInputChange('receberBrindeVia', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.receberBrindeVia === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            ${state.formData.receberBrindeVia === 'WhatsApp' ? `
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">1.6 Número do WhatsApp</label>
+                                <input type="text" oninput="handleInputChange('whatsapp', this.value)" value="${state.formData.whatsapp || ''}" placeholder="(11) 99999-9999" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+                            ` : ''}
+                            ` : ''}
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">2. Cidade</label>
+                                <input type="text" oninput="handleInputChange('cidade', this.value)" value="${state.formData.cidade}" placeholder="Sua cidade" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">3. Estado</label>
+                                <select onchange="handleInputChange('estado', this.value)" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <option value="">Selecione...</option>
+                                    ${estados.map(e => `<option value="${e}" ${state.formData.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
+                                </select>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4. Idade</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['10 a 14', '15 a 17', '18 a 24', '25 a 34', '35 a 44', '45 a 54', '55+'].map(opt => `
+                                        <button onclick="handleInputChange('idade', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.idade === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">5. Qual sua relação com a culinária japonesa?</label>
+                                <div class="space-y-2">
+                                    ${['Não gosto', 'Nunca experimentei', 'Interessante', 'Gosto muito', 'Amo (Peço sempre)'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="relacao" ${state.formData.relacao === opt ? 'checked' : ''} onchange="handleInputChange('relacao', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">6. Com que frequência consome?</label>
+                                <div class="space-y-2">
+                                    ${['Nunca', 'Raramente', '1x por mês', '2 a 4x por mês', 'Toda semana', 'Várias vezes', 'Quando posso'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="frequencia" ${state.formData.frequencia === opt ? 'checked' : ''} onchange="handleInputChange('frequencia', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">7. Você consome:</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['Sushi', 'Sashimi', 'Temaki', 'Yakisoba', 'Hot Roll', 'Outros'].map(opt => `
+                                        <label class="flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${state.formData.consumo.includes(opt) ? 'border-[#bc002d] bg-red-50' : 'border-gray-200'}">
+                                            <input type="checkbox" onchange="toggleCheckbox('consumo', '${opt}')" ${state.formData.consumo.includes(opt) ? 'checked' : ''} class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-bold">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                                ${state.formData.consumo.includes('Outros') ? `
+                                    <div class="pt-1">
+                                        <label class="block text-sm font-bold text-gray-700 mb-1">Se marcou "Outros", digite qual:</label>
+                                        <input type="text" oninput="handleInputChange('consumoOutros', this.value)" value="${state.formData.consumoOutros || ''}" placeholder="Ex.: Udon, Lámen, Gyoza..." class="w-full p-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <button onclick="saveResponse()" ${state.formSubmitting ? 'disabled' : ''} class="w-full bg-[#bc002d] text-white py-5 rounded-xl text-xl font-bold uppercase hover:bg-red-700 shadow-lg mt-8 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                                ${state.formSubmitting ? `
+                                    <span class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    Enviando...
+                                ` : 'ENVIAR'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function Success() {
+            return `
+                <div class="max-w-2xl mx-auto py-20 px-6 text-center">
+                    <div class="bg-white rounded-3xl shadow-2xl p-12 border-b-8 border-green-500">
+                        <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-oswald font-bold text-gray-900 mb-4">OBRIGADO!</h2>
+                        <p class="mb-8">Sua resposta foi enviada e sincronizada.</p>
+                        <button onclick="setView('home')" class="text-[#bc002d] font-bold">Voltar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function Admin() {
+            const showAdminStatus = isAppsScript() || useRemoteBackend();
+            const selectedCount = Object.keys(state.adminMailer.selectedIds || {}).length;
+            const hasAttachment = Boolean(state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
+            return `
+                <div class="p-4 md:p-8">
+                    <div class="admin-future-bg rounded-3xl p-4 md:p-8 fade-up">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <h2 class="text-3xl font-oswald font-bold text-slate-900">DASHBOARD ADMIN</h2>
+                            <p class="text-slate-600 text-sm">Painel inteligente, interativo e em tempo real</p>
+                        </div>
+                        <div class="text-xs text-slate-700 glass-panel rounded-full px-4 py-2 border border-slate-200 flex items-center gap-2"><span class="pulse-dot"></span>Painel seguro • Futurista</div>
+                    </div>
+
+                    <div class="mb-6 bg-white border-2 border-blue-200 rounded-2xl p-4 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                                <div class="font-bold text-slate-900">Envio direto de presentes</div>
+                                <div class="text-xs text-slate-600">Selecionados: ${selectedCount} • Anexo carregado: ${hasAttachment ? 'Sim' : 'Não'}</div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="sendGiftEmailsFromAdmin()" class="bg-blue-700 text-black px-4 py-2 rounded-lg text-xs font-bold">ENVIAR E-MAIL COM PRESENTE</button>
+                                <button type="button" onclick="sendGiftWhatsAppFromAdmin()" class="bg-emerald-700 text-black px-4 py-2 rounded-lg text-xs font-bold">ENVIAR VIA WHATSAPP</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${showAdminStatus && state.adminSyncLoading ? `
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-900 flex items-center gap-3">
+                        <span class="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+                        Carregando respostas do arquivo JSON…
+                    </div>` : ''}
+
+                    ${showAdminStatus && state.adminBackendError ? `
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-900 space-y-2">
+                        <p class="font-bold">Não foi possível ler o arquivo JSON</p>
+                        <p class="opacity-90">${String(state.adminBackendError).replace(/</g, '&lt;')}</p>
+                        <p class="text-xs text-red-800 pt-1">Se aparecer erro de configuração, no editor execute uma vez <code class="bg-red-100 px-1 rounded">configurarPrimeiraVez()</code> (raiz do Drive) ou <code class="bg-red-100 px-1 rounded">configurarNaPasta("ID_DA_PASTA")</code> e publique nova versão do Web App.</p>
+                        <button type="button" onclick="reloadAdminResponses()" class="mt-2 bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold">TENTAR NOVAMENTE</button>
+                    </div>` : ''}
+
+                    ${AdminRespostas()}
+                </div>
+                </div>
+            `;
+        }
+
+        function AdminRespostas() {
+            const refreshBtn = (isAppsScript() || useRemoteBackend())
+                ? `<button type="button" onclick="reloadAdminResponses()" ${state.adminSyncLoading ? 'disabled' : ''} class="bg-white text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50">ATUALIZAR DO JSON</button>`
+                : '';
+            const filteredResponses = getFilteredResponses();
+            const m = getDashboardMetrics(filteredResponses);
+            const total = m.total;
+            const topCidades = topEntries(m.cidadeMap, 5);
+            const topPerfis = topEntries(m.perfilMap, 5);
+            const topEstados = topEntries(m.estadoMap, 5);
+            const topIdades = topEntries(m.idadeMap, 5);
+            const topPremios = topEntries(m.premioMap, 5);
+            const topConsumo = topEntries(m.consumoMap, 5);
+            const frequenciaMap = {};
+            let cpfInformado = 0;
+            let premioInformado = 0;
+            for (let i = 0; i < filteredResponses.length; i++) {
+                const r = filteredResponses[i] || {};
+                const freq = String(r.frequencia || 'Não informado').trim();
+                frequenciaMap[freq] = (frequenciaMap[freq] || 0) + 1;
+                if (String(r.cpf || '').trim()) cpfInformado += 1;
+                if (String(r.premioDesejado || '').trim()) premioInformado += 1;
+            }
+            const topFrequencias = topEntries(frequenciaMap, 5);
+            const semCpf = Math.max(0, total - cpfInformado);
+            const semPremio = Math.max(0, total - premioInformado);
+            const maxCidade = topCidades.length ? topCidades[0][1] : 1;
+            const maxPerfil = topPerfis.length ? topPerfis[0][1] : 1;
+            const maxEstado = topEstados.length ? topEstados[0][1] : 1;
+            const maxIdade = topIdades.length ? topIdades[0][1] : 1;
+            const maxFreq = topFrequencias.length ? topFrequencias[0][1] : 1;
+            const maxConsumo = topConsumo.length ? topConsumo[0][1] : 1;
+            const latest = [...filteredResponses].reverse().slice(0, 6);
+            const cidades = [...new Set(state.responses.map(r => String(r.cidade || '').trim()).filter(Boolean))].sort();
+            const perfis = [...new Set(state.responses.map(r => String(r.relacao || '').trim()).filter(Boolean))].sort();
+            const giftEligible = filteredResponses.filter(r => String(r.querPresente || '').toLowerCase() === 'sim');
+            const selectedCount = giftEligible.filter(r => state.adminMailer.selectedIds[String(r.id)]).length;
+            const emailRecipients = buildEmailRecipientsFromSelection();
+            const whatsappRecipients = buildWhatsAppRecipientsFromSelection();
+            const canSendGifts = emailRecipients.length > 0 && (state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
+            const hasAnyGiftAttachment = Boolean(state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
+            const donutPresente = donutGradient([m.comPresente, m.semPresente], ['#2563eb', '#cbd5e1']);
+            const donutEmail = donutGradient([m.emailsValidos, Math.max(0, total - m.emailsValidos)], ['#0ea5e9', '#cbd5e1']);
+            const donutCpf = donutGradient([cpfInformado, semCpf], ['#4f46e5', '#cbd5e1']);
+            const donutPremio = donutGradient([premioInformado, semPremio], ['#1d4ed8', '#cbd5e1']);
+            return `
+                <div class="space-y-6 soft-grid rounded-2xl p-1">
+                    <div class="glass-panel rounded-2xl border shadow-sm p-4 fade-up sticky top-14 z-20">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-sm uppercase tracking-wide text-slate-800 flex items-center gap-2"><i data-lucide="send" class="w-4 h-4 text-blue-600"></i>Envio rápido de brindes</h3>
+                                <p class="text-xs text-slate-600 mt-1">Selecione pessoas abaixo e use os botões de envio.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="sendGiftEmailsFromAdmin()" ${state.adminMailer.sending || !canSendGifts ? 'disabled' : ''} class="bg-blue-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">${state.adminMailer.sending ? 'ENVIANDO...' : 'ENVIAR E-MAIL COM PRESENTE'}</button>
+                                <button type="button" onclick="sendGiftWhatsAppFromAdmin()" ${whatsappRecipients.length ? '' : 'disabled'} class="bg-emerald-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">ENVIAR VIA WHATSAPP</button>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-600">
+                            Selecionados: <strong>${selectedCount}</strong> | E-mail: <strong>${emailRecipients.length}</strong> | WhatsApp: <strong>${whatsappRecipients.length}</strong> | Anexo: <strong>${hasAnyGiftAttachment ? 'OK' : 'pendente'}</strong>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border shadow-sm p-4 fade-up-delay">
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                            <input type="text" value="${String(state.adminFilters.search || '').replace(/"/g, '&quot;')}" oninput="setAdminFilter('search', this.value)" placeholder="Buscar nome ou e-mail" class="md:col-span-2 p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                            <select onchange="setAdminFilter('cidade', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                                <option value="">Cidade</option>
+                                ${cidades.map(c => `<option value="${c}" ${state.adminFilters.cidade === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                            <select onchange="setAdminFilter('estado', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                                <option value="">Estado</option>
+                                ${estados.map(e => `<option value="${e}" ${state.adminFilters.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
+                            </select>
+                            <select onchange="setAdminFilter('perfil', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                                <option value="">Perfil</option>
+                                ${perfis.map(p => `<option value="${p}" ${state.adminFilters.perfil === p ? 'selected' : ''}>${p}</option>`).join('')}
+                            </select>
+                            <div class="flex gap-2">
+                                <select onchange="setAdminFilter('presente', this.value)" class="flex-1 p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                                    <option value="">Presente</option>
+                                    <option value="Sim" ${state.adminFilters.presente === 'Sim' ? 'selected' : ''}>Sim</option>
+                                    <option value="Não" ${state.adminFilters.presente === 'Não' ? 'selected' : ''}>Não</option>
+                                </select>
+                                <button type="button" onclick="clearAdminFilters()" class="px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-bold">LIMPAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 fade-up">
+                        <div class="kpi-card neon-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="database" class="w-3 h-3 text-blue-700"></i>Total de respostas</div>
+                            <div class="text-3xl font-oswald font-bold mt-1 text-slate-900">${total}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="gift" class="w-3 h-3 text-indigo-600"></i>Quer presente</div>
+                            <div class="text-3xl font-oswald font-bold text-blue-700 mt-1">${m.comPresente}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3 text-cyan-600"></i>E-mails capturados</div>
+                            <div class="text-3xl font-oswald font-bold text-indigo-700 mt-1">${m.emailsValidos}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="users" class="w-3 h-3 text-slate-600"></i>Nomes cadastrados</div>
+                            <div class="text-3xl font-oswald font-bold text-slate-800 mt-1">${m.nomesInformados}</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up">
+                        <h3 class="section-title"><i data-lucide="pie-chart" class="w-4 h-4 text-blue-700"></i>Painel de gráficos (11)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">1) Pizza • Brinde</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutPresente}"></div>
+                                    <div class="text-xs text-slate-700 space-y-1">
+                                        <div>Sim: <strong>${m.comPresente}</strong> (${pct(m.comPresente,total)}%)</div>
+                                        <div>Não: <strong>${m.semPresente}</strong> (${pct(m.semPresente,total)}%)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">2) Pizza • E-mails válidos</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutEmail}"></div>
+                                    <div class="text-xs text-slate-700 space-y-1">
+                                        <div>Válidos: <strong>${m.emailsValidos}</strong> (${pct(m.emailsValidos,total)}%)</div>
+                                        <div>Sem e-mail: <strong>${Math.max(0,total - m.emailsValidos)}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">3) Pizza • CPF informado</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutCpf}"></div>
+                                    <div class="text-xs text-slate-700 space-y-1">
+                                        <div>Com CPF: <strong>${cpfInformado}</strong> (${pct(cpfInformado,total)}%)</div>
+                                        <div>Sem CPF: <strong>${semCpf}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">4) Pizza • Prêmio escolhido</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutPremio}"></div>
+                                    <div class="text-xs text-slate-700 space-y-1">
+                                        <div>Escolheu: <strong>${premioInformado}</strong> (${pct(premioInformado,total)}%)</div>
+                                        <div>Sem escolha: <strong>${semPremio}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">5) Ranking de cidades</div>
+                                ${topCidades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxCidade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">6) Perfil dos adeptos</div>
+                                ${topPerfis.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxPerfil) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">7) Estados</div>
+                                ${topEstados.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxEstado) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">8) Faixa etária</div>
+                                ${topIdades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxIdade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">9) Frequência de consumo</div>
+                                ${topFrequencias.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxFreq) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">10) Preferência de prêmio</div>
+                                ${topPremios.slice(0,4).map(item => `<div class="flex justify-between text-xs py-1"><span>${item[0]}</span><strong>${item[1]}</strong></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">11) Consumo mais citado</div>
+                                ${topConsumo.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxConsumo) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <h3 class="section-title !mb-0"><i data-lucide="mail-plus" class="w-4 h-4 text-blue-700"></i>Envio de brindes por e-mail</h3>
+                            <div class="text-xs text-slate-600">Elegíveis: ${giftEligible.length} • Selecionados: ${selectedCount} • E-mail: ${emailRecipients.length} • WhatsApp: ${whatsappRecipients.length}</div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-600 mb-2">Empresa que envia o e-mail</label>
+                                <input type="text" value="${String(state.adminMailer.senderCompany || '').replace(/"/g, '&quot;')}" oninput="state.adminMailer.senderCompany = this.value; render();" placeholder="Ex.: AACJ - Associação..." class="w-full p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-600 mb-2">Nome exibido no remetente</label>
+                                <input type="text" value="${String(state.adminMailer.senderDisplayName || '').replace(/"/g, '&quot;')}" oninput="state.adminMailer.senderDisplayName = this.value; render();" placeholder="Ex.: Equipe AACJ" class="w-full p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-600 mb-2">E-Book Culinária Japonesa Fitness (arquivo do seu computador)</label>
+                                <input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('fitness', this)" class="block w-full text-xs">
+                                <div class="text-[11px] text-slate-500 mt-2">${state.adminMailer.ebookFitness ? ('Arquivo: ' + state.adminMailer.ebookFitness.name + ' (' + formatFileSize(state.adminMailer.ebookFitness.size) + ')') : 'Nenhum arquivo selecionado.'}</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-600 mb-2">E-Book Curso básico de Sushi e Sashimi</label>
+                                <input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('sushi', this)" class="block w-full text-xs">
+                                <div class="text-[11px] text-slate-500 mt-2">${state.adminMailer.ebookSushi ? ('Arquivo: ' + state.adminMailer.ebookSushi.name + ' (' + formatFileSize(state.adminMailer.ebookSushi.size) + ')') : 'Nenhum arquivo selecionado.'}</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="selectAllGiftRecipientsFromFiltered()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">SELECIONAR TODOS ELEGÍVEIS</button>
+                            <button type="button" onclick="clearGiftSelection()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">LIMPAR SELEÇÃO</button>
+                            <button type="button" onclick="sendGiftEmailsFromAdmin()" ${state.adminMailer.sending || !canSendGifts ? 'disabled' : ''} class="bg-blue-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">${state.adminMailer.sending ? 'ENVIANDO...' : 'ENVIAR E-MAIL COM PRESENTE'}</button>
+                            <button type="button" onclick="sendGiftWhatsAppFromAdmin()" class="bg-emerald-700 text-black px-3 py-2 rounded-lg text-xs font-bold">ENVIAR VIA WHATSAPP</button>
+                        </div>
+                        <div class="max-h-56 overflow-auto border rounded-xl bg-white">
+                            ${giftEligible.length ? giftEligible.map(r => `
+                                <label class="flex items-start gap-3 p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" ${state.adminMailer.selectedIds[String(r.id)] ? 'checked' : ''} onchange="toggleGiftRecipient('${String(r.id).replace(/'/g, "\\'")}', this.checked)" class="mt-1">
+                                    <div>
+                                        <div class="text-sm font-bold text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
+                                        <div class="text-xs text-blue-700">${r.email || 'Sem e-mail'}</div>
+                                        <div class="text-[11px] text-slate-500">Entrega: ${r.receberBrindeVia || 'Não informado'} • WhatsApp: ${r.whatsapp || '-'}</div>
+                                        <div class="text-[11px] text-slate-500">Prêmio: ${r.premioDesejado || 'Não informado'}</div>
+                                    </div>
+                                </label>
+                            `).join('') : '<div class="p-3 text-sm text-slate-500">Nenhum cadastro elegível nos filtros atuais.</div>'}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 justify-end items-center">
+                        ${refreshBtn}
+                        <button onclick="exportExcel()" class="bg-white hover:bg-slate-100 text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5">EXCEL</button>
+                        <button onclick="exportPDF()" class="bg-white hover:bg-slate-100 text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5">PDF</button>
+                    </div>
+                    <div class="glass-panel rounded-2xl shadow-sm border p-3 md:p-0 fade-up">
+                        <div class="md:hidden space-y-3">
+                            ${filteredResponses.length ? filteredResponses.map(r => `
+                                <div class="rounded-xl border border-slate-200 bg-white p-3">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="font-bold text-slate-900 text-sm">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
+                                            <div class="text-[11px] text-slate-500">${r.idade || 'Sem idade'}</div>
+                                        </div>
+                                        <span class="px-2 py-1 rounded-full text-[11px] ${String(r.querPresente || '').toLowerCase() === 'sim' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600'}">${r.querPresente || 'Não informado'}</span>
+                                    </div>
+                                    <div class="mt-2 text-xs text-slate-700"><strong>E-mail:</strong> ${r.email || '-'}</div>
+                                    <div class="text-xs text-slate-700"><strong>CPF:</strong> ${r.cpf || '-'}</div>
+                                    <div class="text-xs text-slate-700"><strong>Local:</strong> ${r.cidade || '-'} / ${r.estado || '-'}</div>
+                                    <div class="text-xs text-slate-700"><strong>Perfil:</strong> ${r.relacao || '-'}</div>
+                                    <div class="text-[11px] text-slate-500 mt-1"><strong>Data:</strong> ${r.data || '-'}</div>
+                                </div>
+                            `).join('') : '<div class="text-sm text-slate-500 p-2">Nenhum resultado com os filtros atuais.</div>'}
+                        </div>
+                        <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-left min-w-[600px]">
+                            <thead class="bg-slate-900 border-b border-slate-800">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Participante</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Contato</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Localização</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Perfil</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Presente</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                ${filteredResponses.map(r => `
+                                    <tr class="hover:bg-blue-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-bold text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
+                                            <div class="text-[10px] text-slate-500">${r.idade || 'Sem idade'}</div>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-slate-700">${r.email || '-'}<br><span class="text-slate-500">${r.cpf || ''}</span></td>
+                                        <td class="px-6 py-4 text-sm text-slate-800">${r.cidade || '-'} / ${r.estado || '-'}</td>
+                                        <td class="px-6 py-4 text-xs font-medium text-blue-700">${r.relacao || '-'}</td>
+                                        <td class="px-6 py-4 text-xs">
+                                            <span class="px-2 py-1 rounded-full ${String(r.querPresente || '').toLowerCase() === 'sim' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600'}">
+                                                ${r.querPresente || 'Não informado'}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-slate-500">${r.data || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up">
+                        <h3 class="section-title"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-700"></i>Novos cadastros (nome + e-mail)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${latest.map(r => `
+                                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="font-bold text-sm text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
+                                    <div class="text-xs text-blue-700">${r.email || 'Sem e-mail'}</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">${r.data || '-'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function AdminConfig() {
+            if (isAppsScript()) {
+                return `
+                <div class="max-w-2xl space-y-6">
+                    <div class="bg-white p-8 rounded-2xl border shadow-sm space-y-4">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="cloud" class="text-green-600"></i> Backend Google Apps Script
+                        </h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Os envios são gravados na sua pasta do Drive como <strong>JSON</strong> (array de respostas).
+                            O primeiro arquivo é <code class="bg-gray-100 px-1 rounded text-xs">censo_culinaria_japonesa_respostas.json</code>.
+                            Quando esse arquivo <strong>atinge o tamanho máximo</strong>, o sistema cria automaticamente
+                            <code class="bg-gray-100 px-1 rounded text-xs">censo_culinaria_japonesa_respostas_part002.json</code>,
+                            <code class="bg-gray-100 px-1 rounded text-xs">…_part003.json</code>, etc. O admin e o formulário
+                            <strong>unem todos os arquivos</strong> ao ler — você não precisa juntar manualmente.
+                        </p>
+                        <div class="p-4 bg-sky-50 border border-sky-200 rounded-xl text-sm text-sky-950 space-y-2">
+                            <p class="font-bold">Link público do censo (copie para divulgar)</p>
+                            <p class="break-all text-xs font-mono"><a href="${WEB_APP_URL}" target="_blank" rel="noopener noreferrer" class="text-sky-700 underline hover:text-sky-900">${WEB_APP_URL}</a></p>
+                            <p class="text-xs text-sky-800/90">Use só esta URL que termina em <code class="bg-sky-100 px-1 rounded">/exec</code>. O link de <strong>Biblioteca</strong> (<code class="bg-sky-100 px-1 rounded">…/macros/library/d/…</code>) é para outro projeto importar código — <strong>não</strong> abre o formulário para o público.</p>
+                            <p class="text-xs pt-1 border-t border-sky-200 space-y-1">
+                                <span class="block"><strong>Dados no Drive (JSON na pasta):</strong> <a href="${DRIVE_JSON_FILE_URL}" target="_blank" rel="noopener noreferrer" class="text-sky-700 underline">abrir pasta Censo_Japones_2026</a> — o script cria/atualiza <code class="bg-sky-100 px-1 rounded">censo_culinaria_japonesa_respostas.json</code> e novos arquivos se precisar.</span>
+                                <span class="block"><strong>Pasta:</strong> <a href="${DRIVE_CENSO_FOLDER_URL}" target="_blank" rel="noopener noreferrer" class="text-sky-700 underline">Censo_Japones_2026</a></span>
+                            </p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-xl text-sm text-green-900 space-y-2">
+                            <p><strong>Automático:</strong> na primeira resposta (ou ao abrir o admin), o script pode criar sozinho o JSON na <strong>raiz do seu Google Drive</strong> se ainda não existir.</p>
+                            <p><strong>Opcional:</strong> para guardar o arquivo numa pasta, rode no editor <code class="bg-green-100 px-1 rounded">configurarNaPasta("ID_DA_PASTA")</code> (o ID está na URL <code class="bg-green-100 px-1 rounded">/folders/ESTE_ID/</code>), depois implante <strong>nova versão</strong> do Web App.</p>
+                            <p><strong>Se der erro:</strong> no editor execute <code class="bg-green-100 px-1 rounded">diagnostico()</code> e veja o resultado em <strong>Execução → Registros</strong>. A implantação deve ser <strong>Executar como: Eu</strong> (não “quem acessa”).</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl space-y-3 text-sm text-amber-950">
+                        <h4 class="font-bold flex items-center gap-2">
+                            <i data-lucide="wrench" class="w-5 h-5"></i> Se a página principal mostrar erro ou lista vazia
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2 leading-relaxed">
+                            <li>No projeto em <strong>script.google.com</strong>, confira se existe arquivo HTML chamado exatamente <strong>Index</strong> (I maiúsculo), com o conteúdo completo do front-end.</li>
+                            <li>Cole o código atualizado do <code class="bg-amber-100 px-1 rounded">Code.gs</code> (inclui ajuda se faltar o Index no <code class="bg-amber-100 px-1 rounded">doGet</code>).</li>
+                            <li>Execute <strong>uma vez</strong> <code class="bg-amber-100 px-1 rounded">configurarPrimeiraVez()</code> ou <code class="bg-amber-100 px-1 rounded">configurarNaPasta("ID")</code> para criar a pasta (se precisar) e o <strong>primeiro</strong> JSON vazio; depois o sistema cria novos JSON na mesma pasta quando necessário.</li>
+                            <li><strong>Implantar → Gerenciar implantações</strong> → edite a implantação do aplicativo da web → <strong>Nova versão</strong> → Salvar (obrigatório após mudar Index ou o .gs).</li>
+                            <li>Abra de novo a URL do aplicativo (termina em <code class="bg-amber-100 px-1 rounded">/exec</code>). O texto sobre “Falta o arquivo Index” só aparece na página inicial se o Index não estiver no projeto — não é mensagem da aba admin em si.</li>
+                        </ol>
+                    </div>
+                </div>
+                `;
+            }
+            if (useRemoteBackend()) {
+                return `
+                <div class="max-w-2xl space-y-6">
+                    <div class="bg-white p-8 rounded-2xl border shadow-sm space-y-4">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="github" class="text-gray-800"></i> Site no GitHub Pages + Drive (JSON)
+                        </h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Esta cópia do formulário está hospedada em domínio próprio (ex.: <strong class="font-mono text-xs">*.github.io</strong>).
+                            Envios e leitura do admin usam o <strong>mesmo</strong> aplicativo da web do Google Apps Script — o valor <code class="bg-gray-100 px-1 rounded text-xs">WEB_APP_URL</code> no início do <code class="bg-gray-100 px-1 rounded text-xs">index.html</code> deve ser a sua URL que termina em <code class="bg-gray-100 px-1 rounded text-xs">/exec</code>.
+                        </p>
+                        <div class="p-4 bg-sky-50 border border-sky-200 rounded-xl text-sm text-sky-950 space-y-2">
+                            <p class="font-bold">URL do backend (Web App)</p>
+                            <p class="break-all text-xs font-mono"><a href="${WEB_APP_URL}" target="_blank" rel="noopener noreferrer" class="text-sky-700 underline hover:text-sky-900">${WEB_APP_URL}</a></p>
+                            <p class="text-xs text-sky-800/90">No GitHub: ative <strong>Pages</strong> em Settings → escolha a branch/pasta com este <code class="bg-sky-100 px-1 rounded">index.html</code> e <code class="bg-sky-100 px-1 rounded">tailwind-built.css</code>. Depois de cada alteração no <code class="bg-sky-100 px-1 rounded">Code.gs</code>, publique <strong>Nova versão</strong> da implantação do script.</p>
+                        </div>
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-950 space-y-2">
+                            <p class="font-bold">Privacidade</p>
+                            <p class="text-xs">Quem souber a URL <code class="bg-amber-100 px-1 rounded">/exec?action=getAll…</code> pode obter a lista de respostas (limitação do JSONP). Use senha no admin e, se precisar de API fechada, podemos adicionar um token secreto no script num passo futuro.</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-xl text-sm text-green-900 space-y-2">
+                            <p><strong>Pasta no Drive:</strong> <a href="${DRIVE_CENSO_FOLDER_URL}" target="_blank" rel="noopener noreferrer" class="text-green-800 underline">abrir pasta</a> · dados nos JSON configurados no Apps Script.</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+            return `
+                <div class="max-w-xl bg-white p-8 rounded-2xl border shadow-sm space-y-6">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i data-lucide="cloud" class="text-blue-500"></i> Integração Google Drive (JSON)
+                    </h3>
+                    <p class="text-sm text-gray-500">Sem URL do Web App nesta página: respostas ficam só no navegador (localStorage). Para GitHub Pages, defina <code class="bg-gray-100 px-1 rounded text-xs">WEB_APP_URL</code> no topo do script.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nome da Pasta no Drive</label>
+                            <input type="text" oninput="handleConfigChange('folder', this.value)" value="${state.driveConfig.folder}" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:border-blue-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nome do Arquivo JSON</label>
+                            <input type="text" oninput="handleConfigChange('filename', this.value)" value="${state.driveConfig.filename}" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:border-blue-400">
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                            <div>
+                                <div class="font-bold text-sm">Sincronização Automática</div>
+                                <div class="text-[10px] text-blue-600">Salvar no JSON a cada nova resposta</div>
+                            </div>
+                            <input type="checkbox" ${state.driveConfig.autoSync ? 'checked' : ''} onchange="handleConfigChange('autoSync', this.checked)" class="w-6 h-6 accent-blue-600">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t">
+                        <button onclick="alert('Configurações aplicadas e salvas com sucesso!')" class="w-full bg-gray-800 text-white py-3 rounded-lg font-bold text-sm">SALVAR CONFIGURAÇÕES</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            let content = '';
+
+            switch(state.currentView) {
+                case 'home': content = Home(); break;
+                case 'form': content = Form(); break;
+                case 'success': content = Success(); break;
+                case 'admin': content = Admin(); break;
+            }
+
+            app.innerHTML = `
+                ${Header()}
+                <div class="step-transition">
+                    ${content}
+                </div>
+            `;
+
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } else {
+                setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 100);
+            }
+        }
+
+        window.addEventListener('online', () => { state.isOnline = true; render(); });
+        window.addEventListener('offline', () => { state.isOnline = false; render(); });
+
+        window.onload = () => {
+            render();
+        };
+    </script>
+</body>
+</html>
