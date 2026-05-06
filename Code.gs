@@ -13,6 +13,8 @@ var SCRIPT_PROP_ROOT_OVERRIDE = 'CENSO_ROOT_FOLDER_ID';
 var PROP_BASE = 'CENSO_JSON_BASE_NAME';
 var DEFAULT_BASE_NAME = 'censo_culinaria_japonesa_respostas';
 var MAX_JSON_BYTES = 1024 * 1024 * 1024;
+/** Arquivo na mesma pasta do censo: lista de administradores (nome + senha em texto — restrinja acesso à pasta). */
+var ADMINS_FILE_NAME = 'censo_culinaria_japonesa_admins.json';
 
 function getPropsStore_() {
   var props = null;
@@ -187,6 +189,65 @@ function getNextPartNumber_(folder) {
     }
   }
   return max + 1;
+}
+
+function getAdminsFile_(folder) {
+  var it = folder.getFilesByName(ADMINS_FILE_NAME);
+  if (it.hasNext()) {
+    return it.next();
+  }
+  return null;
+}
+
+function ensureAdminsFile_(folder) {
+  var f = getAdminsFile_(folder);
+  if (f) {
+    return f;
+  }
+  return folder.createFile(ADMINS_FILE_NAME, '[]', MimeType.PLAIN_TEXT);
+}
+
+/**
+ * @returns {Array<{id:string,nome:string,senha:string}>}
+ */
+function getAdmins() {
+  var folder = getTargetFolder_();
+  var f = getAdminsFile_(folder);
+  if (!f) {
+    return [];
+  }
+  var raw = f.getBlob().getDataAsString('UTF-8');
+  if (!raw || !raw.trim()) {
+    return [];
+  }
+  try {
+    var data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+/**
+ * Substitui o arquivo de administradores pelo array enviado (validação mínima no cliente).
+ */
+function saveAdmins(admins) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var folder = getTargetFolder_();
+    var f = ensureAdminsFile_(folder);
+    var arr = Array.isArray(admins) ? admins : [];
+    f.setContent(JSON.stringify(arr));
+    return { ok: true, fileName: ADMINS_FILE_NAME };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Expõe limpeza do JSON de respostas para o front-end (zera cadastros, mantém admins). */
+function resetCensusResponses() {
+  return limparBancoCensoAgora();
 }
 
 function getAllResponses() {
@@ -384,6 +445,24 @@ function doGet(e) {
       return jsonOutput_({ ok: true, data: getAllResponses() });
     }
 
+    if (action === 'getAdmins' && (p.callback || p.cb)) {
+      var cbAdm = sanitizeJsonpCallback_(p.callback || p.cb);
+      try {
+        var admList = getAdmins();
+        return ContentService.createTextOutput(cbAdm + '(' + JSON.stringify(admList) + ');').setMimeType(
+          ContentService.MimeType.JAVASCRIPT
+        );
+      } catch (errAdmJsonp) {
+        return ContentService.createTextOutput(
+          cbAdm + '(' + JSON.stringify([]) + ');'
+        ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+    }
+
+    if (action === 'getAdmins') {
+      return jsonOutput_({ ok: true, data: getAdmins() });
+    }
+
     return jsonOutput_({ ok: false, error: 'Acao GET invalida.' });
   } catch (error) {
     return jsonOutput_({ ok: false, error: String(error && error.message ? error.message : error) });
@@ -409,6 +488,14 @@ function doPost(e) {
 
     if (action === 'sendGiftEmails') {
       return jsonOutput_(sendGiftEmails(payload.recipients, payload.attachments, payload.mailOptions));
+    }
+
+    if (action === 'saveAdmins') {
+      return jsonOutput_(saveAdmins(payload.admins));
+    }
+
+    if (action === 'resetResponses') {
+      return jsonOutput_(resetCensusResponses());
     }
 
     return jsonOutput_({ ok: false, error: 'Acao POST invalida.' });

@@ -10,9 +10,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --jp-bg: #0F172A;
+            --jp-surface: #1E293B;
+            --jp-rose: #E11D48;
+            --jp-gold: #FACC15;
+            --jp-text: #FFFFFF;
+            --jp-muted: #CBD5F5;
+            --jp-glass: rgba(30, 41, 59, 0.72);
+            --jp-border: rgba(148, 163, 184, 0.25);
+        }
 
         body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; }
+        body.admin-dark-active {
+            background-color: var(--jp-bg);
+        }
         .font-oswald { font-family: 'Oswald', sans-serif; }
         
         .hero-bg {
@@ -176,6 +190,213 @@
             background-image: linear-gradient(to right, rgba(148,163,184,.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,.14) 1px, transparent 1px);
             background-size: 22px 22px;
         }
+
+        /* —— Dashboard administrativo (dark / glass / motion) —— */
+        .jp-dash-root {
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: calc(100vh - 52px);
+            position: relative;
+            color: var(--jp-text);
+            background-color: var(--jp-bg);
+            overflow-x: hidden;
+        }
+        .jp-dash-root::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(ellipse 120% 80% at 10% -20%, rgba(225, 29, 72, 0.12), transparent 50%),
+                radial-gradient(ellipse 80% 50% at 100% 0%, rgba(250, 204, 21, 0.06), transparent 45%),
+                repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(148, 163, 184, 0.03) 48px, rgba(148, 163, 184, 0.03) 49px),
+                radial-gradient(circle at 20% 30%, rgba(244, 114, 182, 0.08) 0%, transparent 8%),
+                radial-gradient(circle at 85% 70%, rgba(244, 114, 182, 0.06) 0%, transparent 6%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .jp-dash-root > * {
+            position: relative;
+            z-index: 1;
+        }
+        .jp-sidebar {
+            width: 16.5rem;
+            background: var(--jp-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid var(--jp-border);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .jp-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1rem;
+            border-radius: 0.75rem;
+            color: var(--jp-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+        }
+        .jp-sidebar-link:hover {
+            color: var(--jp-text);
+            background: rgba(225, 29, 72, 0.12);
+            transform: translateX(2px);
+        }
+        .jp-sidebar-link.jp-sidebar-active {
+            color: var(--jp-text);
+            background: linear-gradient(90deg, rgba(225, 29, 72, 0.25), rgba(250, 204, 21, 0.08));
+            border: 1px solid rgba(225, 29, 72, 0.35);
+        }
+        .jp-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 35;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .jp-overlay.jp-overlay-on {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .jp-glass-panel {
+            background: var(--jp-glass);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--jp-border);
+            border-radius: 1rem;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .jp-glass-panel:hover {
+            border-color: rgba(250, 204, 21, 0.2);
+        }
+        .jp-kpi-card {
+            background: var(--jp-glass);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--jp-border);
+            border-radius: 1rem;
+            padding: 1.125rem;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.25s ease;
+        }
+        .jp-kpi-card:hover {
+            transform: translateY(-3px) scale(1.01);
+            border-color: rgba(250, 204, 21, 0.2);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.15);
+        }
+        .jp-title {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--jp-text);
+        }
+        .jp-sub {
+            color: var(--jp-muted);
+        }
+        .jp-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.125rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+        }
+        .jp-btn:active {
+            transform: scale(0.98);
+        }
+        .jp-btn-rose {
+            background: linear-gradient(135deg, #E11D48, #BE123C);
+            color: #FFFFFF;
+            border: none;
+            box-shadow: 0 8px 20px rgba(225, 29, 72, 0.35);
+        }
+        .jp-btn-rose:hover:not(:disabled) {
+            filter: brightness(1.08);
+        }
+        .jp-btn-gold {
+            background: linear-gradient(135deg, #FACC15, #CA8A04);
+            color: #0F172A;
+            border: none;
+            box-shadow: 0 8px 20px rgba(250, 204, 21, 0.22);
+        }
+        .jp-btn-gold:hover:not(:disabled) {
+            filter: brightness(1.06);
+        }
+        .jp-btn-ghost {
+            background: transparent;
+            color: var(--jp-muted);
+            border: 1px solid var(--jp-border);
+        }
+        .jp-btn-ghost:hover {
+            color: var(--jp-text);
+            border-color: rgba(250, 204, 21, 0.4);
+        }
+        .jp-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: var(--jp-text);
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .jp-input:focus {
+            border-color: var(--jp-rose);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2);
+        }
+        .jp-input::placeholder {
+            color: #64748b;
+        }
+        .jp-data-bar-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #1e293b;
+            overflow: hidden;
+        }
+        .jp-data-bar-fill {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #E11D48 0%, #FACC15 100%);
+            animation: growBar .9s ease both;
+        }
+        .jp-skeleton {
+            border-radius: 0.75rem;
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+            animation: jpShimmer 1.5s infinite;
+        }
+        @keyframes jpShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .jp-donut {
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: transform 0.3s ease;
+        }
+        .jp-donut:hover {
+            transform: scale(1.05);
+        }
+        .jp-chat-bubble-in {
+            max-width: 85%;
+            border-radius: 1rem 1rem 1rem 0.25rem;
+            padding: 0.65rem 0.95rem;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid var(--jp-border);
+            color: var(--jp-muted);
+            font-size: 0.8125rem;
+            line-height: 1.45;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -212,7 +433,15 @@
         // Estado Global
         let state = {
             currentView: 'home', 
-            adminTab: 'respostas', // respostas ou configuracoes
+            adminTab: 'overview',
+            adminSidebarOpen: false,
+            giftClientFlow: {
+                accepted: '',
+                pdfFile: null,
+                pdfName: '',
+                sendStatus: 'idle',
+                sendMessage: ''
+            },
             responses: JSON.parse(localStorage.getItem('censo_responses') || '[]'),
             adminFilters: {
                 search: '',
@@ -238,6 +467,9 @@
                 dataNascimento: '',
                 cidadeMora: '',
                 estadoMora: '',
+                cep: '',
+                enderecoLogradouro: '',
+                enderecoBairro: '',
                 enderecoRua: '',
                 enderecoNumero: '',
                 receberComunicacao: '',
@@ -257,8 +489,18 @@
             formSubmitting: false,
             isOnline: navigator.onLine,
             adminSyncLoading: false,
-            adminBackendError: null
+            adminBackendError: null,
+            /** Lista no Drive: censo_culinaria_japonesa_admins.json */
+            admins: JSON.parse(localStorage.getItem('censo_admins') || '[]'),
+            adminSession: JSON.parse(localStorage.getItem('censo_admin_session') || 'null'),
+            adminUi: { novoNome: '', novaSenha: '' },
+            adminResetLoading: false,
+            /** Feedback da consulta ViaCEP (CEP → localidade) */
+            cepLookup: { status: 'idle', message: '' }
         };
+
+        var __cepLookupTimer = null;
+        var __cepLookupReq = 0;
 
         const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
@@ -459,6 +701,327 @@
             });
         }
 
+        /** GitHub Pages: carrega administradores (JSONP). */
+        function loadAdminsFromRemote(onDone) {
+            var cbName = 'censoAdminsJsonp' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+            var script = document.createElement('script');
+            var doneOnce = false;
+            var timeoutId = setTimeout(function () {
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                if (!doneOnce) {
+                    doneOnce = true;
+                    onDone(null, 'timeout');
+                }
+            }, 25000);
+            window[cbName] = function (data) {
+                if (doneOnce) {
+                    return;
+                }
+                doneOnce = true;
+                try {
+                    clearTimeout(timeoutId);
+                } catch (x) { /* ignore */ }
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                onDone(Array.isArray(data) ? data : [], null);
+            };
+            script.onerror = function () {
+                try {
+                    delete window[cbName];
+                } catch (x) { /* ignore */ }
+                if (!doneOnce) {
+                    doneOnce = true;
+                    try {
+                        clearTimeout(timeoutId);
+                    } catch (x2) { /* ignore */ }
+                    onDone(null, 'script-error');
+                }
+            };
+            var sep = WEB_APP_URL.indexOf('?') >= 0 ? '&' : '?';
+            script.async = true;
+            script.src =
+                WEB_APP_URL + sep + 'action=getAdmins&callback=' + encodeURIComponent(cbName) + '&_=' + Date.now();
+            document.head.appendChild(script);
+        }
+
+        function applyAdminsFromServer(admins) {
+            if (!Array.isArray(admins)) {
+                return;
+            }
+            state.admins = admins.map(function (a, i) {
+                return {
+                    id: String(a && a.id != null ? a.id : 'adm_' + Date.now() + '_' + i),
+                    nome: String((a && a.nome) || '').trim() || 'Administrador',
+                    senha: String((a && a.senha) || '')
+                };
+            });
+            try {
+                localStorage.setItem('censo_admins', JSON.stringify(state.admins));
+            } catch (e) { /* ignore */ }
+        }
+
+        function validateAdminSessionAgainstList() {
+            if (!state.adminSession) {
+                return;
+            }
+            if (state.adminSession.id === 'legacy') {
+                return;
+            }
+            var id = String(state.adminSession.id);
+            var ok = (state.admins || []).some(function (a) {
+                return String(a.id) === id;
+            });
+            if (!ok) {
+                clearAdminSession();
+                alert('Sua sessão não é mais válida (usuário removido da lista). Entre novamente.');
+                state.currentView = 'home';
+                render();
+            }
+        }
+
+        function persistAdminSession() {
+            try {
+                localStorage.setItem('censo_admin_session', JSON.stringify(state.adminSession));
+            } catch (e) { /* ignore */ }
+        }
+
+        function clearAdminSession() {
+            state.adminSession = null;
+            try {
+                localStorage.removeItem('censo_admin_session');
+            } catch (e) { /* ignore */ }
+        }
+
+        /** Define sessão se a senha bater com a lista atual ou ADMIN_PASSWORD legado (retorna true se entrou). */
+        function tryMatchAdminPassword(pass) {
+            pass = String(pass);
+            var list = Array.isArray(state.admins) ? state.admins : [];
+            var hit = null;
+            for (var i = 0; i < list.length; i++) {
+                if (String((list[i] && list[i].senha) || '') === pass) {
+                    hit = list[i];
+                    break;
+                }
+            }
+            if (hit) {
+                state.adminSession = {
+                    id: String(hit.id != null ? hit.id : ''),
+                    nome: String(hit.nome || 'Administrador').trim() || 'Administrador'
+                };
+                persistAdminSession();
+                setView('admin');
+                return true;
+            }
+            if (pass === ADMIN_PASSWORD) {
+                state.adminSession = { id: 'legacy', nome: 'Administrador principal (senha legada)' };
+                persistAdminSession();
+                setView('admin');
+                return true;
+            }
+            return false;
+        }
+
+        /** Abre pedido de senha; sincroniza lista de admins do Drive antes de validar (Web App / GitHub). */
+        function requestAdminLogin() {
+            var pass = prompt('Digite sua senha de administrador:');
+            if (pass == null || String(pass) === '') {
+                return;
+            }
+            pass = String(pass);
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(function (admins) {
+                        applyAdminsFromServer(admins);
+                        if (!tryMatchAdminPassword(pass)) {
+                            alert('Senha incorreta.');
+                        }
+                    })
+                    .withFailureHandler(function () {
+                        if (!tryMatchAdminPassword(pass)) {
+                            alert('Senha incorreta.');
+                        }
+                    })
+                    .getAdmins();
+                return;
+            }
+            if (useRemoteBackend()) {
+                loadAdminsFromRemote(function (admins, err) {
+                    if (!err && Array.isArray(admins)) {
+                        applyAdminsFromServer(admins);
+                    }
+                    if (!tryMatchAdminPassword(pass)) {
+                        alert('Senha incorreta.');
+                    }
+                });
+                return;
+            }
+            if (!tryMatchAdminPassword(pass)) {
+                alert('Senha incorreta.');
+            }
+        }
+
+        function openAdminArea() {
+            if (state.adminSession) {
+                setView('admin');
+            } else {
+                requestAdminLogin();
+            }
+        }
+
+        function logoutAdmin() {
+            clearAdminSession();
+            setView('home');
+        }
+
+        function setAdminUiField(field, value) {
+            state.adminUi = state.adminUi || { novoNome: '', novaSenha: '' };
+            state.adminUi[field] = value;
+            render();
+        }
+
+        function persistAdminsList() {
+            var list = Array.isArray(state.admins) ? state.admins.slice() : [];
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(function () {
+                        alert('Administradores gravados no arquivo JSON no Drive (\u201ccenso_culinaria_japonesa_admins.json\u201d).');
+                        render();
+                    })
+                    .withFailureHandler(function (err) {
+                        alert('Erro ao gravar administradores: ' + scriptRunError(err));
+                        render();
+                    })
+                    .saveAdmins(list);
+                return;
+            }
+            if (useRemoteBackend()) {
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'saveAdmins', admins: list })
+                })
+                    .then(function () {
+                        try {
+                            localStorage.setItem('censo_admins', JSON.stringify(list));
+                        } catch (e) { /* ignore */ }
+                        alert(
+                            'Pedido enviado ao servidor. Em alguns segundos verifique no Drive o arquivo censo_culinaria_japonesa_admins.json (modo sem leitura de resposta no navegador).'
+                        );
+                        render();
+                    })
+                    .catch(function (err) {
+                        alert(String(err && err.message ? err.message : err));
+                        render();
+                    });
+                return;
+            }
+            try {
+                localStorage.setItem('censo_admins', JSON.stringify(list));
+            } catch (e) { /* ignore */ }
+            alert('Administradores salvos apenas neste navegador (sem Web App configurado).');
+            render();
+        }
+
+        function addAdminEntry() {
+            var ui = state.adminUi || { novoNome: '', novaSenha: '' };
+            var n = String(ui.novoNome || '').trim();
+            var s = String(ui.novaSenha || '').trim();
+            if (!n || s.length < 4) {
+                alert('Informe o nome completo do administrador e uma senha com pelo menos 4 caracteres.');
+                return;
+            }
+            if (!state.admins) {
+                state.admins = [];
+            }
+            state.admins.push({ id: String(Date.now()), nome: n, senha: s });
+            state.adminUi = { novoNome: '', novaSenha: '' };
+            persistAdminsList();
+        }
+
+        function removeAdminEntry(id) {
+            if (!confirm('Remover este administrador do arquivo JSON?')) {
+                return;
+            }
+            var sid = String(id);
+            if (state.adminSession && String(state.adminSession.id) === sid) {
+                alert('Você não pode remover a si mesmo enquanto estiver logado. Saia da conta ou use outro administrador.');
+                return;
+            }
+            state.admins = (state.admins || []).filter(function (a) {
+                return String(a.id) !== sid;
+            });
+            persistAdminsList();
+        }
+
+        function resetCensusDataConfirm() {
+            if (
+                !confirm(
+                    'ATENÇÃO: esta ação apaga TODOS os cadastros do censo nos arquivos JSON de respostas no Google Drive (e a cópia local). O sistema de indicadores voltará do zero. Os administradores e o arquivo de senhas NÃO serão apagados. Deseja continuar?'
+                )
+            ) {
+                return;
+            }
+            if (!confirm('Confirmação final: não há como desfazer. Apagar todos os cadastros agora?')) {
+                return;
+            }
+            state.adminResetLoading = true;
+            render();
+
+            function afterLocalClear() {
+                state.adminResetLoading = false;
+                state.responses = [];
+                try {
+                    localStorage.setItem('censo_responses', '[]');
+                } catch (e) { /* ignore */ }
+                state.adminMailer = state.adminMailer || {};
+                state.adminMailer.selectedIds = {};
+                render();
+                alert('Cadastros zerados. O JSON de respostas foi limpo (ou o pedido foi enviado — aguarde e use \u0022Atualizar JSON\u0022).');
+            }
+
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(function () {
+                        afterLocalClear();
+                    })
+                    .withFailureHandler(function (err) {
+                        state.adminResetLoading = false;
+                        render();
+                        alert('Falha ao limpar o banco: ' + scriptRunError(err));
+                    })
+                    .resetCensusResponses();
+                return;
+            }
+            if (useRemoteBackend()) {
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'resetResponses' })
+                })
+                    .then(function () {
+                        afterLocalClear();
+                    })
+                    .catch(function (err) {
+                        state.adminResetLoading = false;
+                        render();
+                        alert(String(err && err.message ? err.message : err));
+                    });
+                return;
+            }
+            afterLocalClear();
+        }
+
         /** Mensagem legível quando o Apps Script devolve erro no withFailureHandler */
         function scriptRunError(err) {
             if (err == null) return 'Erro desconhecido.';
@@ -473,20 +1036,38 @@
 
         // Funções de Navegação
         function setView(view) {
+            if (view === 'admin' && !state.adminSession) {
+                requestAdminLogin();
+                return;
+            }
             state.currentView = view;
+            if (view === 'form') {
+                state.cepLookup = { status: 'idle', message: '' };
+            }
             if (view === 'admin' && isAppsScript()) {
                 state.adminBackendError = null;
                 state.adminSyncLoading = true;
                 render();
                 google.script.run
                     .withSuccessHandler(function (rows) {
-                        state.adminSyncLoading = false;
                         state.responses = rows || [];
                         try {
                             localStorage.setItem('censo_responses', JSON.stringify(state.responses));
                         } catch (e) { /* ignore */ }
-                        render();
-                        window.scrollTo(0, 0);
+                        google.script.run
+                            .withSuccessHandler(function (admins) {
+                                state.adminSyncLoading = false;
+                                applyAdminsFromServer(admins);
+                                validateAdminSessionAgainstList();
+                                render();
+                                window.scrollTo(0, 0);
+                            })
+                            .withFailureHandler(function () {
+                                state.adminSyncLoading = false;
+                                render();
+                                window.scrollTo(0, 0);
+                            })
+                            .getAdmins();
                     })
                     .withFailureHandler(function (err) {
                         state.adminSyncLoading = false;
@@ -502,18 +1083,27 @@
                 state.adminSyncLoading = true;
                 render();
                 loadResponsesFromRemote(function (rows, err) {
-                    state.adminSyncLoading = false;
                     if (err) {
+                        state.adminSyncLoading = false;
                         state.adminBackendError = err;
-                    } else {
-                        state.responses = rows || [];
-                        try {
-                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
-                        } catch (e) { /* ignore */ }
-                        state.adminBackendError = null;
+                        render();
+                        window.scrollTo(0, 0);
+                        return;
                     }
-                    render();
-                    window.scrollTo(0, 0);
+                    state.responses = rows || [];
+                    try {
+                        localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                    } catch (e) { /* ignore */ }
+                    state.adminBackendError = null;
+                    loadAdminsFromRemote(function (admins, errAdm) {
+                        state.adminSyncLoading = false;
+                        if (!errAdm && Array.isArray(admins)) {
+                            applyAdminsFromServer(admins);
+                            validateAdminSessionAgainstList();
+                        }
+                        render();
+                        window.scrollTo(0, 0);
+                    });
                 });
                 return;
             }
@@ -523,10 +1113,61 @@
 
         function setAdminTab(tab) {
             state.adminTab = tab;
+            state.adminSidebarOpen = false;
             render();
         }
 
-        /** Recarrega respostas do JSON no Drive (Web App ou GitHub Pages + mesma URL /exec) */
+        function toggleAdminSidebar() {
+            state.adminSidebarOpen = !state.adminSidebarOpen;
+            render();
+        }
+
+        function setGiftClientAccepted(v) {
+            state.giftClientFlow = state.giftClientFlow || {};
+            state.giftClientFlow.accepted = v;
+            if (v !== 'sim') {
+                state.giftClientFlow.pdfFile = null;
+                state.giftClientFlow.pdfName = '';
+                state.giftClientFlow.sendStatus = 'idle';
+                state.giftClientFlow.sendMessage = '';
+            }
+            render();
+        }
+
+        function handleGiftClientPdf(input) {
+            state.giftClientFlow = state.giftClientFlow || {};
+            var f = input.files && input.files[0];
+            if (f && String(f.name || '').toLowerCase().indexOf('.pdf') === -1) {
+                alert('Envie um arquivo PDF (.pdf).');
+                input.value = '';
+                return;
+            }
+            state.giftClientFlow.pdfFile = f || null;
+            state.giftClientFlow.pdfName = f ? f.name : '';
+            render();
+        }
+
+        function sendGiftClientBonus() {
+            var g = state.giftClientFlow || {};
+            if (g.accepted !== 'sim') {
+                alert('Indique se o cliente aceitou o brinde (Sim).');
+                return;
+            }
+            if (!g.pdfFile) {
+                alert('Faça o upload do PDF do brinde antes de enviar.');
+                return;
+            }
+            g.sendStatus = 'pending';
+            g.sendMessage = '';
+            render();
+            window.setTimeout(function () {
+                state.giftClientFlow.sendStatus = 'sent';
+                state.giftClientFlow.sendMessage = 'Registro local: envio simulado com sucesso. Conecte sua API de e-mail ou WhatsApp Business para disparo real ao cliente.';
+                render();
+            }, 1100);
+        }
+
+        /** Recarrega respostas e administradores do Drive (Web App ou GitHub Pages + mesma URL /exec) */
         function reloadAdminResponses() {
             if (isAppsScript()) {
                 state.adminBackendError = null;
@@ -534,12 +1175,22 @@
                 render();
                 google.script.run
                     .withSuccessHandler(function (rows) {
-                        state.adminSyncLoading = false;
                         state.responses = rows || [];
                         try {
                             localStorage.setItem('censo_responses', JSON.stringify(state.responses));
                         } catch (e) { /* ignore */ }
-                        render();
+                        google.script.run
+                            .withSuccessHandler(function (admins) {
+                                state.adminSyncLoading = false;
+                                applyAdminsFromServer(admins);
+                                validateAdminSessionAgainstList();
+                                render();
+                            })
+                            .withFailureHandler(function () {
+                                state.adminSyncLoading = false;
+                                render();
+                            })
+                            .getAdmins();
                     })
                     .withFailureHandler(function (err) {
                         state.adminSyncLoading = false;
@@ -554,17 +1205,25 @@
                 state.adminSyncLoading = true;
                 render();
                 loadResponsesFromRemote(function (rows, err) {
-                    state.adminSyncLoading = false;
                     if (err) {
+                        state.adminSyncLoading = false;
                         state.adminBackendError = err;
-                    } else {
-                        state.responses = rows || [];
-                        try {
-                            localStorage.setItem('censo_responses', JSON.stringify(state.responses));
-                        } catch (e) { /* ignore */ }
-                        state.adminBackendError = null;
+                        render();
+                        return;
                     }
-                    render();
+                    state.responses = rows || [];
+                    try {
+                        localStorage.setItem('censo_responses', JSON.stringify(state.responses));
+                    } catch (e) { /* ignore */ }
+                    state.adminBackendError = null;
+                    loadAdminsFromRemote(function (admins, errAdm) {
+                        state.adminSyncLoading = false;
+                        if (!errAdm && Array.isArray(admins)) {
+                            applyAdminsFromServer(admins);
+                            validateAdminSessionAgainstList();
+                        }
+                        render();
+                    });
                 });
             }
         }
@@ -589,6 +1248,95 @@
             if (field === 'receberBrindeVia' && value !== 'WhatsApp') {
                 state.formData.whatsapp = '';
             }
+        }
+
+        function normalizeCepDigits(str) {
+            return String(str || '').replace(/\D/g, '').slice(0, 8);
+        }
+
+        function formatCepDisplay(digits) {
+            if (digits.length <= 5) {
+                return digits;
+            }
+            return digits.slice(0, 5) + '-' + digits.slice(5, 8);
+        }
+
+        function handleCepInput(raw) {
+            var d = normalizeCepDigits(raw);
+            state.formData.cep = formatCepDisplay(d);
+            try {
+                clearTimeout(__cepLookupTimer);
+            } catch (e) { /* ignore */ }
+            if (d.length !== 8) {
+                state.cepLookup = { status: 'idle', message: '' };
+                render();
+                return;
+            }
+            state.cepLookup = { status: 'idle', message: '' };
+            __cepLookupTimer = setTimeout(function () {
+                lookupCepViaViaCep(d);
+            }, 450);
+            render();
+        }
+
+        function handleCepBlur() {
+            try {
+                clearTimeout(__cepLookupTimer);
+            } catch (e) { /* ignore */ }
+            var d = normalizeCepDigits(state.formData.cep);
+            if (d.length === 8) {
+                lookupCepViaViaCep(d);
+            }
+        }
+
+        function lookupCepViaViaCep(digits8) {
+            var reqId = ++__cepLookupReq;
+            state.cepLookup = { status: 'loading', message: 'Consultando CEP…' };
+            render();
+            fetch('https://viacep.com.br/ws/' + digits8 + '/json/')
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status);
+                    }
+                    return res.json();
+                })
+                .then(function (data) {
+                    if (reqId !== __cepLookupReq) {
+                        return;
+                    }
+                    if (!data || data.erro) {
+                        state.cepLookup = { status: 'erro', message: 'CEP não encontrado. Verifique os números.' };
+                        render();
+                        return;
+                    }
+                    state.formData.enderecoLogradouro = String(data.logradouro || '').trim();
+                    state.formData.enderecoBairro = String(data.bairro || '').trim();
+                    var loc = String(data.localidade || '').trim();
+                    var ufOk = String(data.uf || '').trim().toUpperCase();
+                    if (loc) {
+                        state.formData.cidade = loc;
+                        state.formData.cidadeMora = loc;
+                    }
+                    if (ufOk) {
+                        state.formData.estado = ufOk;
+                        state.formData.estadoMora = ufOk;
+                    }
+                    state.cepLookup = {
+                        status: 'ok',
+                        message: 'Cidade e estado atualizados a partir do CEP. Confira os campos abaixo.'
+                    };
+                    render();
+                })
+                .catch(function () {
+                    if (reqId !== __cepLookupReq) {
+                        return;
+                    }
+                    state.cepLookup = {
+                        status: 'erro',
+                        message: 'Não foi possível consultar o CEP. Verifique sua conexão ou preencha manualmente.'
+                    };
+                    render();
+                });
         }
 
         function onSelectGostaComidaJaponesa(opt) {
@@ -619,7 +1367,7 @@
         }
 
         function blankFormState() {
-            return { gostaComidaJaponesa: '', querPresente: '', nomeCompleto: '', cpf: '', dataNascimento: '', cidadeMora: '', estadoMora: '', enderecoRua: '', enderecoNumero: '', receberComunicacao: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '', fazSushiCasa: '' };
+            return { gostaComidaJaponesa: '', querPresente: '', nomeCompleto: '', cpf: '', dataNascimento: '', cidadeMora: '', estadoMora: '', cep: '', enderecoLogradouro: '', enderecoBairro: '', enderecoRua: '', enderecoNumero: '', receberComunicacao: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '', fazSushiCasa: '' };
         }
 
         function saveResponse(saveOpts) {
@@ -656,8 +1404,10 @@
                 }
                 return item;
             });
+            const logradouroSalvo = String(state.formData.enderecoLogradouro || state.formData.enderecoRua || '').trim();
             const newResponse = {
                 ...state.formData,
+                enderecoRua: logradouroSalvo,
                 consumo: consumoNormalizado,
                 id: Date.now(),
                 data: new Date().toLocaleString('pt-BR')
@@ -1070,7 +1820,10 @@ Estamos enviando seu material agora.`;
                 Estado: r.estado || '',
                 CidadeMora: r.cidadeMora || '',
                 EstadoMora: r.estadoMora || '',
-                EnderecoRua: r.enderecoRua || '',
+                CEP: r.cep || '',
+                Logradouro: r.enderecoLogradouro || r.enderecoRua || '',
+                Bairro: r.enderecoBairro || '',
+                EnderecoRua: r.enderecoLogradouro || r.enderecoRua || '',
                 EnderecoNumero: r.enderecoNumero || '',
                 ReceberComunicacao: r.receberComunicacao || '',
                 Idade: r.idade || '',
@@ -1152,25 +1905,29 @@ Estamos enviando seu material agora.`;
             doc.save("Relatorio_Censo.pdf");
         }
 
-        function loginAdmin() {
-            const pass = prompt("Digite a senha administrativa:");
-            if (pass === ADMIN_PASSWORD) {
-                setView('admin');
-            } else {
-                alert("Senha incorreta!");
-            }
+        function escapeHtmlDisplay(str) {
+            return String(str == null ? '' : str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         // Componentes
         function Header() {
+            var dark = state.currentView === 'admin';
+            var sess = state.adminSession;
+            var nomeLog = sess ? escapeHtmlDisplay(sess.nome) : '';
             return `
-                <header class="bg-white border-b px-4 py-1 flex justify-between items-center sticky top-0 z-50 shadow-sm">
-                    <div class="flex items-center gap-2 cursor-pointer" onclick="setView('home')">
-                        <img src="${AACJ_LOGO_SRC}" alt="AACJ - Associação dos Adeptos da Culinária Japonesa" class="h-8 w-auto object-contain">
+                <header class="${dark ? 'bg-[#0F172A] border-slate-700' : 'bg-white border-gray-200'} border-b px-4 py-2 flex justify-between items-center sticky top-0 z-50 shadow-sm transition-colors gap-3">
+                    <div class="flex items-center gap-2 cursor-pointer min-w-0" onclick="setView('home')">
+                        <img src="${AACJ_LOGO_SRC}" alt="AACJ" class="h-8 w-auto object-contain shrink-0 ${dark ? 'opacity-95' : ''}">
                     </div>
-                    <div class="flex items-center gap-4">
-                        ${!state.isOnline ? '<span class="text-orange-500 text-xs flex items-center gap-1"><i data-lucide="cloud-off" class="w-3 h-3"></i> Offline</span>' : ''}
-                        <button onclick="loginAdmin()" class="text-gray-500 hover:text-[#bc002d]">
+                    <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                        ${dark && sess ? `<span class="hidden sm:flex items-center gap-1.5 text-xs text-[#CBD5F5] max-w-[min(280px,40vw)] truncate" title="${nomeLog.replace(/\"/g, '&quot;')}"><i data-lucide="user" class="w-3.5 h-3.5 shrink-0 text-[#FACC15]"></i><strong class="text-white font-semibold truncate">${nomeLog}</strong></span>` : ''}
+                        ${!state.isOnline ? `<span class="${dark ? 'text-amber-400' : 'text-orange-500'} text-xs flex items-center gap-1 shrink-0"><i data-lucide="cloud-off" class="w-3 h-3"></i> Offline</span>` : ''}
+                        ${dark ? `<button type="button" onclick="logoutAdmin()" class="text-xs font-bold uppercase tracking-wide text-[#fecaca] hover:text-[#fca5a5] px-2 py-1 rounded-lg border border-red-500/50 shrink-0">Sair</button>` : ''}
+                        <button type="button" onclick="openAdminArea()" class="${dark ? 'text-[#CBD5F5] hover:text-[#FACC15]' : 'text-gray-500 hover:text-[#bc002d]'} p-1 rounded-lg transition-colors shrink-0" aria-label="Painel administrativo">
                             <i data-lucide="settings" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -1216,30 +1973,66 @@ Estamos enviando seu material agora.`;
                                 </div>
                             </div>
 
+                            ${state.formData.gostaComidaJaponesa === 'Sim' ? `
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">2. Cidade / Estado</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <input type="text" oninput="handleInputChange('cidade', this.value); handleInputChange('cidadeMora', this.value);" value="${state.formData.cidade}" placeholder="Cidade" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    <select onchange="handleInputChange('estado', this.value); handleInputChange('estadoMora', this.value);" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                        <option value="">Estado</option>
-                                        ${estados.map(e => `<option value="${e}" ${state.formData.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
+                                <label class="block font-bold text-gray-700">2. CEP de onde você está respondendo ao censo</label>
+                                <p class="text-xs text-gray-500 -mt-1">Ao completar os 8 dígitos, cidade e UF são atualizadas automaticamente (consulta ViaCEP).</p>
+                                <label class="block text-xs font-bold text-gray-600" for="inp-cep-censo">CEP</label>
+                                <input id="inp-cep-censo" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" oninput="handleCepInput(this.value)" onblur="handleCepBlur()" value="${state.formData.cep || ''}" placeholder="00000-000" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                <p class="text-xs mt-1 ${state.cepLookup.status === 'loading' ? 'text-green-800' : state.cepLookup.status === 'ok' ? 'text-green-700' : state.cepLookup.status === 'erro' ? 'text-red-600' : 'text-gray-500'}" role="status" aria-live="polite">${state.cepLookup.message ? state.cepLookup.message : '\u00A0'}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                                    <input type="text" oninput="handleInputChange('cidade', this.value); handleInputChange('cidadeMora', this.value);" value="${state.formData.cidadeMora || state.formData.cidade || ''}" placeholder="Cidade" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <select onchange="handleInputChange('estado', this.value); handleInputChange('estadoMora', this.value);" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                        <option value="">Estado (UF)</option>
+                                        ${estados.map(e => `<option value="${e}" ${(state.formData.estadoMora || state.formData.estado) === e ? 'selected' : ''}>${e}</option>`).join('')}
                                     </select>
                                 </div>
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">3. Idade</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    ${['10 a 14', '15 a 17', '18 a 24', '25 a 34', '35 a 44', '45 a 54', '55+'].map(opt => `
-                                        <button onclick="handleInputChange('idade', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.idade === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
-                                            ${opt}
-                                        </button>
+                                <label class="block font-bold text-gray-700">3. Qual sua relação com a culinária japonesa?</label>
+                                <div class="space-y-2">
+                                    ${['Curto, mas sem paixão extrema', 'Nunca experimentei, mas gostaria', 'Gosto muito — amo', 'Sou fanático e adepto — até faço em casa'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="relacao" ${state.formData.relacao === opt ? 'checked' : ''} onchange="handleInputChange('relacao', '${opt}'); render();" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
                                     `).join('')}
                                 </div>
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">Vai participar?</label>
+                                <label class="block font-bold text-gray-700">4. Com que frequência consome no mês?</label>
+                                <div class="space-y-2">
+                                    ${['Nunca', 'Raramente', '1x por mês', '2 a 4x por mês', 'Quando posso'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="frequencia" ${state.formData.frequencia === opt ? 'checked' : ''} onchange="handleInputChange('frequencia', '${opt}'); render();" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">5. O que você mais gosta?</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['Sushi', 'Sashimi', 'Temaki', 'Hot Roll', 'Outros'].map(opt => `
+                                        <label class="flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${state.formData.consumo.includes(opt) ? 'border-[#bc002d] bg-red-50' : 'border-gray-200'}">
+                                            <input type="checkbox" onchange="toggleCheckbox('consumo', '${opt}')" ${state.formData.consumo.includes(opt) ? 'checked' : ''} class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-bold">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                                ${state.formData.consumo.includes('Outros') ? `
+                                    <div class="pt-1">
+                                        <label class="block text-sm font-bold text-gray-700 mb-1">Se marcou Outros, especifique:</label>
+                                        <input type="text" oninput="handleInputChange('consumoOutros', this.value)" value="${state.formData.consumoOutros || ''}" placeholder="Ex.: Udon, Lámen, Gyoza..." class="w-full p-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">6. Deseja participar da associação AACJB e do programa de brinde gratuito?</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     ${['Sim', 'Não'].map(opt => `
                                         <button onclick="handleInputChange('querPresente', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.querPresente === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
@@ -1250,62 +2043,18 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             ${state.formData.querPresente === 'Sim' ? `
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
-                                <p class="font-bold text-[#bc002d] text-lg">Antes de finalizar, que tal dar um passo a mais?</p>
-                                <p class="text-sm text-gray-700">Associe-se à AACJB – Associação dos Adeptos da Culinária Japonesa no Brasil. Ao se tornar membro, você não paga nada e já escolhe um brinde exclusivo e gratuito.</p>
-                                <label class="block font-bold text-gray-700">Qual brinde você escolhe?</label>
-                                <div class="space-y-2">
-                                    ${['e-Book Curso de Sushi e Sashimi - Passo a passo', 'e-Book Receitas de Culinária Japonesa Fitness'].map(opt => `
-                                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
-                                            <input type="radio" name="premioDesejado" ${state.formData.premioDesejado === opt ? 'checked' : ''} onchange="handleInputChange('premioDesejado', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
-                                            <span class="text-sm font-medium">${opt}</span>
-                                        </label>
-                                    `).join('')}
-                                </div>
-                                <p class="text-sm text-gray-700">Além disso, sua participação fortalece sua cidade e ajuda a conquistar o título de maior número de adeptos da culinária japonesa do Brasil.</p>
-                            </div>
-
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                                <p class="font-bold text-[#bc002d] text-lg">Cadastro de associação AACJB</p>
-                                <p class="text-sm text-gray-700 mt-1">Preencha os dados abaixo para concluir sua participação.</p>
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">9. Nome completo</label>
+                                <input type="text" oninput="handleInputChange('nomeCompleto', this.value)" value="${state.formData.nomeCompleto}" placeholder="Digite seu nome completo" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.1 Nome completo</label>
-                                <input type="text" oninput="handleInputChange('nomeCompleto', this.value)" value="${state.formData.nomeCompleto}" placeholder="Digite seu nome completo" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                <label class="block font-bold text-gray-700">10. CPF</label>
+                                <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.2 CPF</label>
-                                <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.3 Data de nascimento</label>
-                                <input type="date" oninput="handleInputChange('dataNascimento', this.value)" value="${state.formData.dataNascimento || ''}" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.4 Cidade que mora / Estado</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <input type="text" oninput="handleInputChange('cidadeMora', this.value)" value="${state.formData.cidadeMora || state.formData.cidade}" placeholder="Cidade que mora" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    <select onchange="handleInputChange('estadoMora', this.value)" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                        <option value="">Estado</option>
-                                        ${estados.map(e => `<option value="${e}" ${(state.formData.estadoMora || state.formData.estado) === e ? 'selected' : ''}>${e}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.5 Endereço</label>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <input type="text" oninput="handleInputChange('enderecoRua', this.value)" value="${state.formData.enderecoRua || ''}" placeholder="Rua" class="md:col-span-2 w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    <input type="text" oninput="handleInputChange('enderecoNumero', this.value)" value="${state.formData.enderecoNumero || ''}" placeholder="Nº" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.6 Quer receber comunicação da AACJB?</label>
+                                <label class="block font-bold text-gray-700">Deseja receber comunicações e novidades da AACJB?</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     ${['Sim', 'Não'].map(opt => `
                                         <button onclick="handleInputChange('receberComunicacao', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.receberComunicacao === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
@@ -1316,12 +2065,8 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.7 E-mail (para contato e envio de brinde)</label>
-                                <input type="email" oninput="handleInputChange('email', this.value)" value="${state.formData.email}" placeholder="seuemail@exemplo.com" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.8 Como deseja receber seu brinde?</label>
+                                <label class="block font-bold text-gray-700">15. Como deseja receber o material do brinde?</label>
+                                <p class="text-xs text-gray-500 -mt-1 mb-1">Defina o canal primeiro; em seguida informe e-mail e, se for o caso, o WhatsApp.</p>
                                 <div class="grid grid-cols-2 gap-3">
                                     ${['E-mail', 'WhatsApp'].map(opt => `
                                         <button onclick="handleInputChange('receberBrindeVia', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.receberBrindeVia === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
@@ -1333,62 +2078,28 @@ Estamos enviando seu material agora.`;
 
                             ${state.formData.receberBrindeVia === 'WhatsApp' ? `
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4.9 Número do WhatsApp</label>
-                                <input type="text" oninput="handleInputChange('whatsapp', this.value)" value="${state.formData.whatsapp || ''}" placeholder="(11) 99999-9999" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                <label class="block font-bold text-gray-700">Número do WhatsApp</label>
+                                <input type="text" oninput="handleInputChange('whatsapp', this.value)" value="${state.formData.whatsapp || ''}" placeholder="(11) 99999-9999" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
                             </div>
                             ` : ''}
+
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">5. Qual sua relação com a culinária japonesa?</label>
-                                <div class="space-y-2">
-                                    ${['Não gosto', 'Nunca experimentei, mas gostaria', 'Gosto muito - Amo', 'Sou fanático e adepto - até faço em casa'].map(opt => `
-                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
-                                            <input type="radio" name="relacao" ${state.formData.relacao === opt ? 'checked' : ''} onchange="handleInputChange('relacao', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
+                                <label class="block font-bold text-gray-700">16. E-mail (para contato e envio, se aplicável)</label>
+                                <input type="email" oninput="handleInputChange('email', this.value)" value="${state.formData.email}" placeholder="seuemail@exemplo.com" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                                <p class="font-bold text-[#bc002d] text-lg">Qual brinde gratuito você escolhe?</p>
+                                <p class="text-sm text-gray-700">Associe-se à AACJB – Associação dos Adeptos da Culinária Japonesa no Brasil. Ao se tornar membro, você não paga nada e já escolhe um brinde exclusivo e gratuito.</p>
+                                <div class="space-y-2" role="group" aria-label="Opções de brinde">
+                                    ${['e-Book Curso de Sushi e Sashimi - Passo a passo', 'e-Book Receitas de Culinária Japonesa Fitness'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="premioDesejado" ${state.formData.premioDesejado === opt ? 'checked' : ''} onchange="handleInputChange('premioDesejado', '${opt}'); render();" class="w-5 h-5 accent-[#bc002d]">
                                             <span class="text-sm font-medium">${opt}</span>
                                         </label>
                                     `).join('')}
                                 </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">6. Com que frequência consome no mês?</label>
-                                <div class="space-y-2">
-                                    ${['Nunca', 'Raramente', '1x por mês', '2 a 4x por mês', 'Toda semana', 'Várias vezes', 'Quando posso'].map(opt => `
-                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
-                                            <input type="radio" name="frequencia" ${state.formData.frequencia === opt ? 'checked' : ''} onchange="handleInputChange('frequencia', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
-                                            <span class="text-sm font-medium">${opt}</span>
-                                        </label>
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">7. O que você mais gosta?</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    ${['Sushi', 'Sashimi', 'Temaki', 'Hot Roll', 'Outros'].map(opt => `
-                                        <label class="flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${state.formData.consumo.includes(opt) ? 'border-[#bc002d] bg-red-50' : 'border-gray-200'}">
-                                            <input type="checkbox" onchange="toggleCheckbox('consumo', '${opt}')" ${state.formData.consumo.includes(opt) ? 'checked' : ''} class="w-5 h-5 accent-[#bc002d]">
-                                            <span class="text-sm font-bold">${opt}</span>
-                                        </label>
-                                    `).join('')}
-                                </div>
-                                ${state.formData.consumo.includes('Outros') ? `
-                                    <div class="pt-1">
-                                        <label class="block text-sm font-bold text-gray-700 mb-1">Se marcou "Outros", digite qual:</label>
-                                        <input type="text" oninput="handleInputChange('consumoOutros', this.value)" value="${state.formData.consumoOutros || ''}" placeholder="Ex.: Udon, Lámen, Gyoza..." class="w-full p-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">8. Você faz sushi em casa?</label>
-                                <div class="space-y-2">
-                                    ${['Sim', 'Não', 'Queria apreender e fazer'].map(opt => `
-                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
-                                            <input type="radio" name="fazSushiCasa" ${state.formData.fazSushiCasa === opt ? 'checked' : ''} onchange="handleInputChange('fazSushiCasa', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
-                                            <span class="text-sm font-medium">${opt}</span>
-                                        </label>
-                                    `).join('')}
-                                </div>
+                                <p class="text-sm text-gray-700">Além disso, sua participação fortalece sua cidade e ajuda a conquistar o título de maior número de adeptos da culinária japonesa do Brasil.</p>
                             </div>
 
                             <button onclick="saveResponse()" ${state.formSubmitting ? 'disabled' : ''} class="w-full bg-green-600 text-white py-5 rounded-xl text-xl font-bold uppercase hover:bg-green-700 shadow-lg shadow-green-900/20 mt-8 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
@@ -1407,6 +2118,7 @@ Estamos enviando seu material agora.`;
                                     ` : `<i data-lucide="send" class="w-7 h-7 text-white"></i><span>ENVIAR</span>`}
                                 </button>
                             </div>
+                            ` : ''}
                             ` : ''}
                         </div>
                     </div>
@@ -1433,53 +2145,86 @@ Estamos enviando seu material agora.`;
             const showAdminStatus = isAppsScript() || useRemoteBackend();
             const selectedCount = Object.keys(state.adminMailer.selectedIds || {}).length;
             const hasAttachment = Boolean(state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
+            const tab = state.adminTab || 'overview';
+            const sidebarItems = [
+                { id: 'overview', icon: 'gauge', label: 'Visão geral', desc: 'KPI e gráficos' },
+                { id: 'lista', icon: 'users', label: 'Cadastros', desc: 'Lista e filtros' },
+                { id: 'brindes', icon: 'gift', label: 'Brindes & envios', desc: 'E-books e AACJ' },
+                { id: 'relatorios', icon: 'file-down', label: 'Relatórios', desc: 'Excel e PDF' },
+                { id: 'interacoes', icon: 'message-circle', label: 'Interações', desc: 'Q&A / chat' },
+                { id: 'sistema', icon: 'shield', label: 'Sistema', desc: 'Reset e administradores' },
+                { id: 'config', icon: 'cloud', label: 'Nuvem & API', desc: 'Drive / GitHub / Script' }
+            ];
             return `
-                <div class="p-4 md:p-8">
-                    <div class="admin-future-bg rounded-3xl p-4 md:p-8 fade-up">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                        <div>
-                            <h2 class="text-3xl font-oswald font-bold text-slate-900">DASHBOARD ADMIN</h2>
-                            <p class="text-slate-600 text-sm">Painel inteligente, interativo e em tempo real</p>
+                <div class="jp-dash-root flex flex-col md:flex-row">
+                    <div class="jp-overlay md:hidden ${state.adminSidebarOpen ? 'jp-overlay-on' : ''}" onclick="toggleAdminSidebar()" aria-hidden="true"></div>
+                    <aside class="jp-sidebar fixed md:sticky md:top-[52px] top-[52px] left-0 z-40 flex h-[calc(100vh-52px)] shrink-0 flex-col ${state.adminSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0">
+                        <div class="border-b border-slate-700/80 px-4 py-4">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#94a3b8]">AACJ • Censo</p>
                         </div>
-                        <div class="text-xs text-slate-700 glass-panel rounded-full px-4 py-2 border border-slate-200 flex items-center gap-2"><span class="pulse-dot"></span>Painel seguro • Futurista</div>
-                    </div>
-
-                    <div class="mb-6 bg-white border-2 border-blue-200 rounded-2xl p-4 shadow-sm">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div>
-                                <div class="font-bold text-slate-900">Envio direto de presentes</div>
-                                <div class="text-xs text-slate-600">Selecionados: ${selectedCount} • Anexo carregado: ${hasAttachment ? 'Sim' : 'Não'}</div>
+                        <nav class="flex flex-col gap-0.5 p-3 flex-1 overflow-y-auto">
+                            ${sidebarItems.map(function (it) {
+                                const active = tab === it.id;
+                                return `
+                                <button type="button" onclick="setAdminTab('${it.id}')" class="jp-sidebar-link w-full text-left ${active ? 'jp-sidebar-active' : ''}">
+                                    <i data-lucide="${it.icon}" class="w-4 h-4 shrink-0 opacity-90"></i>
+                                    <span class="flex flex-col gap-0.5">
+                                        <span>${it.label}</span>
+                                        <span class="text-[10px] font-normal jp-sub">${it.desc}</span>
+                                    </span>
+                                </button>`;
+                            }).join('')}
+                        </nav>
+                        <div class="p-4 border-t border-slate-700/60 text-[10px] jp-sub leading-relaxed">
+                            Tema · #0F172A · #E11D48 · #FACC15
+                        </div>
+                    </aside>
+                    <div class="flex-1 min-w-0 pt-16 md:pt-4 p-4 md:p-8">
+                        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6 fade-up">
+                            <div class="flex items-start gap-3">
+                                <button type="button" onclick="toggleAdminSidebar()" class="md:hidden jp-btn jp-btn-ghost shrink-0" aria-label="Abrir menu">
+                                    <i data-lucide="panel-left" class="w-5 h-5"></i>
+                                </button>
+                                <div class="min-w-0">
+                                    <h1 class="jp-title text-2xl lg:text-3xl tracking-tight">Dashboard</h1>
+                                    <p class="jp-sub text-sm mt-1 max-w-xl">Painel único para o censo AACJ · restaurante & adeptos · métricas, cadastros, brindes e exportação.</p>
+                                    ${state.adminSession ? `<p class="mt-2 flex items-center gap-2 text-sm text-[#FACC15] font-semibold"><i data-lucide="user-circle" class="w-4 h-4 shrink-0"></i><span class="truncate">Logado como: ${escapeHtmlDisplay(state.adminSession.nome)}</span></p>` : ''}
+                                </div>
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="sendGiftEmailsFromAdmin()" class="bg-blue-700 text-black px-4 py-2 rounded-lg text-xs font-bold">ENVIAR E-MAIL COM PRESENTE</button>
-                                <button type="button" onclick="sendGiftWhatsAppFromAdmin()" class="bg-emerald-700 text-black px-4 py-2 rounded-lg text-xs font-bold">ENVIAR VIA WHATSAPP</button>
+                            <div class="flex flex-wrap items-center gap-2">
+                                ${showAdminStatus ? `
+                                <button type="button" onclick="reloadAdminResponses()" ${state.adminSyncLoading ? 'disabled' : ''} class="jp-btn jp-btn-ghost disabled:opacity-40">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                    Atualizar JSON
+                                </button>` : ''}
+                                <span class="text-xs jp-sub whitespace-nowrap">Brinde: <strong class="text-white">${selectedCount}</strong> sel. · PDF <strong class="text-white">${hasAttachment ? 'ok' : '—'}</strong></span>
                             </div>
                         </div>
+
+                        ${showAdminStatus && state.adminSyncLoading ? `
+                        <div class="mb-6 jp-glass-panel p-4 flex items-center gap-3 text-[#CBD5F5] text-sm">
+                            <span class="inline-block w-5 h-5 border-2 border-[#FACC15] border-t-transparent rounded-full animate-spin"></span>
+                            Sincronizando respostas e administradores (JSON no Drive)…
+                        </div>` : ''}
+
+                        ${showAdminStatus && state.adminBackendError ? `
+                        <div class="mb-6 jp-glass-panel border border-red-500/40 p-4 text-sm space-y-2 text-[#fecaca]">
+                            <p class="font-bold text-white flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4"></i>Não foi possível ler o JSON</p>
+                            <p>${String(state.adminBackendError).replace(/</g, '&lt;')}</p>
+                            <p class="text-xs text-[#fca5a5]">Execute no editor <code class="bg-slate-800 px-1 rounded text-[#FACC15]">configurarPrimeiraVez()</code> ou <code class="bg-slate-800 px-1 rounded text-[#FACC15]">configurarNaPasta(\"ID\")</code> e publique nova versão do Web App.</p>
+                            <button type="button" onclick="reloadAdminResponses()" class="jp-btn jp-btn-rose text-xs mt-2">Tentar novamente</button>
+                        </div>` : ''}
+
+                        ${AdminRespostas()}
                     </div>
-
-                    ${showAdminStatus && state.adminSyncLoading ? `
-                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-900 flex items-center gap-3">
-                        <span class="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
-                        Carregando respostas do arquivo JSON…
-                    </div>` : ''}
-
-                    ${showAdminStatus && state.adminBackendError ? `
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-900 space-y-2">
-                        <p class="font-bold">Não foi possível ler o arquivo JSON</p>
-                        <p class="opacity-90">${String(state.adminBackendError).replace(/</g, '&lt;')}</p>
-                        <p class="text-xs text-red-800 pt-1">Se aparecer erro de configuração, no editor execute uma vez <code class="bg-red-100 px-1 rounded">configurarPrimeiraVez()</code> (raiz do Drive) ou <code class="bg-red-100 px-1 rounded">configurarNaPasta("ID_DA_PASTA")</code> e publique nova versão do Web App.</p>
-                        <button type="button" onclick="reloadAdminResponses()" class="mt-2 bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold">TENTAR NOVAMENTE</button>
-                    </div>` : ''}
-
-                    ${AdminRespostas()}
-                </div>
                 </div>
             `;
         }
 
         function AdminRespostas() {
+            const tab = state.adminTab || 'overview';
             const refreshBtn = (isAppsScript() || useRemoteBackend())
-                ? `<button type="button" onclick="reloadAdminResponses()" ${state.adminSyncLoading ? 'disabled' : ''} class="bg-white text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50">ATUALIZAR DO JSON</button>`
+                ? `<button type="button" onclick="reloadAdminResponses()" ${state.adminSyncLoading ? 'disabled' : ''} class="jp-btn jp-btn-ghost text-xs disabled:opacity-40">Atualizar JSON</button>`
                 : '';
             const filteredResponses = getFilteredResponses();
             const m = getDashboardMetrics(filteredResponses);
@@ -1509,6 +2254,7 @@ Estamos enviando seu material agora.`;
             const maxIdade = topIdades.length ? topIdades[0][1] : 1;
             const maxFreq = topFrequencias.length ? topFrequencias[0][1] : 1;
             const maxConsumo = topConsumo.length ? topConsumo[0][1] : 1;
+            const maxPremio = topPremios.length ? topPremios[0][1] : 1;
             const latest = [...filteredResponses].reverse().slice(0, 6);
             const cidades = [...new Set(state.responses.map(r => String(r.cidade || '').trim()).filter(Boolean))].sort();
             const perfis = [...new Set(state.responses.map(r => String(r.relacao || '').trim()).filter(Boolean))].sort();
@@ -1518,284 +2264,346 @@ Estamos enviando seu material agora.`;
             const whatsappRecipients = buildWhatsAppRecipientsFromSelection();
             const canSendGifts = emailRecipients.length > 0 && (state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
             const hasAnyGiftAttachment = Boolean(state.adminMailer.ebookFitness || state.adminMailer.ebookSushi);
-            const donutPresente = donutGradient([m.comPresente, m.semPresente], ['#2563eb', '#cbd5e1']);
-            const donutEmail = donutGradient([m.emailsValidos, Math.max(0, total - m.emailsValidos)], ['#0ea5e9', '#cbd5e1']);
-            const donutCpf = donutGradient([cpfInformado, semCpf], ['#4f46e5', '#cbd5e1']);
-            const donutPremio = donutGradient([premioInformado, semPremio], ['#1d4ed8', '#cbd5e1']);
-            const donutGostaJa = donutGradient([m.gostaJapSim, m.gostaJapNao, m.gostaJapSemInfo], ['#16a34a', '#ea580c', '#cbd5e1']);
-            return `
-                <div class="space-y-6 soft-grid rounded-2xl p-1">
-                    <div class="glass-panel rounded-2xl border shadow-sm p-4 fade-up sticky top-14 z-20">
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                            <div>
-                                <h3 class="font-bold text-sm uppercase tracking-wide text-slate-800 flex items-center gap-2"><i data-lucide="send" class="w-4 h-4 text-blue-600"></i>Envio rápido de brindes</h3>
-                                <p class="text-xs text-slate-600 mt-1">Selecione pessoas abaixo e use os botões de envio.</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="sendGiftEmailsFromAdmin()" ${state.adminMailer.sending || !canSendGifts ? 'disabled' : ''} class="bg-blue-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">${state.adminMailer.sending ? 'ENVIANDO...' : 'ENVIAR E-MAIL COM PRESENTE'}</button>
-                                <button type="button" onclick="sendGiftWhatsAppFromAdmin()" ${whatsappRecipients.length ? '' : 'disabled'} class="bg-emerald-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">ENVIAR VIA WHATSAPP</button>
-                            </div>
+            const donutPresente = donutGradient([m.comPresente, m.semPresente], ['#E11D48', '#334155']);
+            const donutEmail = donutGradient([m.emailsValidos, Math.max(0, total - m.emailsValidos)], ['#FACC15', '#334155']);
+            const donutCpf = donutGradient([cpfInformado, semCpf], ['#94A3B8', '#334155']);
+            const donutPremio = donutGradient([premioInformado, semPremio], ['#E11D48', '#475569']);
+            const donutGostaJa = donutGradient([m.gostaJapSim, m.gostaJapNao, m.gostaJapSemInfo], ['#22C55E', '#FB923C', '#334155']);
+            const gcf = state.giftClientFlow || { accepted: '', sendStatus: 'idle', sendMessage: '', pdfName: '' };
+            var barCell = function (mapArr, mx) {
+                return mapArr.slice(0, 4).map(item => `
+                    <div class="mb-2">
+                        <div class="flex justify-between gap-2 text-xs text-[#CBD5F5]"><span class="truncate">${item[0]}</span><strong class="text-white shrink-0">${item[1]}</strong></div>
+                        <div class="jp-data-bar-track mt-1"><span class="jp-data-bar-fill" style="width:${Math.max(6, Math.round((item[1] / mx) * 100))}%"></span></div>
+                    </div>
+                `).join('') || '<div class="text-xs jp-sub">Sem dados.</div>';
+            };
+
+            if (tab === 'sistema') {
+                const ui = state.adminUi || { novoNome: '', novaSenha: '' };
+                const admHtml = (Array.isArray(state.admins) ? state.admins : [])
+                    .map(function (a) {
+                        var sid = String(a.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                        var nm = escapeHtmlDisplay(a.nome || 'Administrador');
+                        return (
+                            '<div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border border-slate-700 bg-[#0b1224]/80">' +
+                            '<div><p class="font-bold text-white">' +
+                            nm +
+                            '</p><p class="text-[11px] jp-sub">Nome e senha ficam gravados em <strong class="text-[#CBD5F5]">censo_culinaria_japonesa_admins.json</strong> no Drive</p></div>' +
+                            '<button type="button" onclick="removeAdminEntry(\'' +
+                            sid +
+                            '\')" class="jp-btn jp-btn-ghost text-xs border-red-500/40 text-red-300 hover:bg-red-950/40 shrink-0">Remover</button></div>'
+                        );
+                    })
+                    .join('');
+                const nomeInput = String(ui.novoNome || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;');
+                const senhaInput = String(ui.novaSenha || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;');
+                return `
+                <div class="space-y-6 fade-up max-w-3xl">
+                    <div class="rounded-2xl border-2 border-red-600 bg-red-950/30 p-5 text-red-100">
+                        <h2 class="text-lg font-bold text-red-400 flex items-center gap-2"><i data-lucide="trash-2" class="w-5 h-5"></i> Zerar todos os cadastros do censo</h2>
+                        <p class="text-sm leading-relaxed mt-3"><strong class="text-white">Atenção (lembrete em vermelho):</strong> após confirmar esta limpeza, <strong>todos os participantes são apagados</strong> do arquivo JSON de respostas no Google Drive. O painel e os relatórios <strong class="underline">voltam do zero</strong>. Esta ação <strong>não remove</strong> administradores nem o arquivo <code class="bg-black/40 px-1 rounded text-[#FACC15] text-xs">censo_culinaria_japonesa_admins.json</code>.</p>
+                        ${state.adminResetLoading ? `<p class="text-xs mt-3 flex items-center gap-2"><span class="inline-block w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></span>Processando reset…</p>` : ''}
+                        <button type="button" onclick="resetCensusDataConfirm()" ${state.adminResetLoading ? 'disabled' : ''} class="mt-4 jp-btn jp-btn-rose w-full sm:w-auto ${state.adminResetLoading ? 'opacity-50 cursor-not-allowed' : ''}">Executar reset completo dos cadastros</button>
+                    </div>
+                    <div class="jp-glass-panel p-6 space-y-4">
+                        <h2 class="jp-title text-lg flex items-center gap-2"><i data-lucide="shield" class="w-5 h-5 text-[#FACC15]"></i> Novos administradores</h2>
+                        <p class="jp-sub text-sm leading-relaxed">Cadastros salvos no JSON dos administradores na mesma pasta do censo. Cada usuário define <strong class="text-white">nome para exibir após login</strong> e <strong class="text-white">senha</strong>. A senha padrão do código (<code class="bg-slate-800 px-1 rounded text-xs">${escapeHtmlDisplay(ADMIN_PASSWORD)}</code>) continua válida como acesso legado até você criar contas próprias.</p>
+                        <p class="text-xs text-[#fca5a5] border border-[#fecaca]/30 rounded-xl p-3 bg-[#450a0a]/30">Segurança: hoje as senhas são gravadas em <strong class="text-white">texto plano</strong> no JSON — proteja quem pode ver a pasta do Drive.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold jp-sub uppercase mb-2">Nome (aparece logado)</label>
+                                <input class="jp-input text-sm" type="text" autocomplete="off" placeholder="Ex.: Ana Coordenação"
+                                    value="${nomeInput}"
+                                    oninput="setAdminUiField('novoNome', this.value)"
+                                ></div>
+                            <div><label class="block text-xs font-bold jp-sub uppercase mb-2">Nova senha (mín. 4 caracteres)</label>
+                                <input class="jp-input text-sm" type="password" autocomplete="new-password" placeholder="••••"
+                                    value="${senhaInput}"
+                                    oninput="setAdminUiField('novaSenha', this.value)"
+                                ></div>
                         </div>
-                        <div class="mt-2 text-[11px] text-slate-600">
-                            Selecionados: <strong>${selectedCount}</strong> | E-mail: <strong>${emailRecipients.length}</strong> | WhatsApp: <strong>${whatsappRecipients.length}</strong> | Anexo: <strong>${hasAnyGiftAttachment ? 'OK' : 'pendente'}</strong>
+                        <button type="button" onclick="addAdminEntry()" class="jp-btn jp-btn-gold">Gravar novo administrador no JSON</button>
+                        <div class="space-y-2 pt-2"><p class="text-xs jp-sub uppercase tracking-wide">Administradores atuais</p>${admHtml || '<p class="jp-sub text-sm py-4">Nenhum além da senha legada do arquivo <code class="bg-slate-800 px-1 rounded">index.html</code></p>'}</div>
+                    </div>
+                </div>`;
+            }
+
+            if (tab === 'config') {
+                return '<div class="fade-up jp-config-scope max-w-3xl">' + AdminConfig() + '</div>';
+            }
+            if (tab === 'interacoes') {
+                return `
+                <div class="space-y-6 fade-up">
+                    <div class="jp-glass-panel p-6">
+                        <h2 class="jp-title text-xl flex items-center gap-2"><i data-lucide="message-circle" class="w-7 h-7 text-[#FACC15]"></i> Perguntas e respostas</h2>
+                        <p class="jp-sub text-sm mt-2 leading-relaxed">Central de interações (chat, bots, suporte). As conversas aparecem aqui quando houver integração registrada no backend.</p>
+                    </div>
+                    <div class="jp-glass-panel p-6 flex flex-col min-h-[400px]">
+                        <div class="flex-1 rounded-xl bg-[#0b1224] border border-slate-700/90 p-4 flex flex-col justify-end gap-3">
+                            <div class="jp-chat-bubble-in self-start fade-up"><span class="text-[#FACC15] font-semibold">Pulse ·</span> Nenhuma thread carregada. O canal está pronto para receber mensagens.</div>
+                            <div class="jp-chat-bubble-in self-start"><span class="text-[#E11D48] font-semibold">Sistema ·</span> Layout estilo chat com contraste garantido sobre fundo escuro.</div>
+                        </div>
+                        <p class="text-center text-[11px] jp-sub mt-4">Área preparada para listar histórico, preferências e frequência assim que uma API de chat for conectada.</p>
+                    </div>
+                </div>`;
+            }
+            if (tab === 'relatorios') {
+                return `
+                <div class="space-y-6 fade-up">
+                    <div class="jp-glass-panel p-8">
+                        <h2 class="jp-title text-2xl mb-2">Relatórios</h2>
+                        <p class="jp-sub text-sm mb-8 max-w-2xl leading-relaxed">Exporte dados reais do censo em planilha (análises, BI) ou PDF oficial (apoio e apresentações da rede).</p>
+                        <div class="flex flex-wrap gap-4">
+                            <button type="button" onclick="exportExcel()" class="jp-btn jp-btn-gold px-8 py-4 text-sm rounded-xl hover:scale-[1.02]"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i>Excel</button>
+                            <button type="button" onclick="exportPDF()" class="jp-btn jp-btn-rose px-8 py-4 text-sm rounded-xl hover:scale-[1.02]"><i data-lucide="file-text" class="w-5 h-5"></i>PDF</button>
+                            ${refreshBtn}
                         </div>
                     </div>
-
-                    <div class="glass-panel rounded-2xl border shadow-sm p-4 fade-up-delay">
+                    <div class="jp-glass-panel p-6 grid sm:grid-cols-3 gap-4 text-sm">
+                        <div><p class="jp-sub text-xs uppercase tracking-wider mb-1">Respostas (filtro)</p><p class="text-white text-3xl font-bold">${total}</p></div>
+                        <div><p class="jp-sub text-xs uppercase tracking-wider mb-1">Com brinde</p><p class="text-[#FACC15] text-3xl font-bold">${m.comPresente}</p></div>
+                        <div><p class="jp-sub text-xs uppercase tracking-wider mb-1">E-mails válidos</p><p class="text-[#E11D48] text-3xl font-bold">${m.emailsValidos}</p></div>
+                    </div>
+                </div>`;
+            }
+            if (tab === 'lista') {
+                return `
+                <div class="space-y-6 fade-up">
+                    <div class="jp-glass-panel p-5">
+                        <h2 class="jp-title text-lg mb-4 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-[#FACC15]"></i> Filtros do censo</h2>
                         <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
-                            <input type="text" value="${String(state.adminFilters.search || '').replace(/"/g, '&quot;')}" oninput="setAdminFilter('search', this.value)" placeholder="Buscar nome ou e-mail" class="md:col-span-2 p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                            <select onchange="setAdminFilter('cidade', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                                <option value="">Cidade</option>
-                                ${cidades.map(c => `<option value="${c}" ${state.adminFilters.cidade === c ? 'selected' : ''}>${c}</option>`).join('')}
-                            </select>
-                            <select onchange="setAdminFilter('estado', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                                <option value="">Estado</option>
-                                ${estados.map(e => `<option value="${e}" ${state.adminFilters.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
-                            </select>
-                            <select onchange="setAdminFilter('perfil', this.value)" class="p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                                <option value="">Perfil</option>
-                                ${perfis.map(p => `<option value="${p}" ${state.adminFilters.perfil === p ? 'selected' : ''}>${p}</option>`).join('')}
-                            </select>
-                            <div class="flex gap-2">
-                                <select onchange="setAdminFilter('presente', this.value)" class="flex-1 p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                                    <option value="">Presente</option>
-                                    <option value="Sim" ${state.adminFilters.presente === 'Sim' ? 'selected' : ''}>Sim</option>
-                                    <option value="Não" ${state.adminFilters.presente === 'Não' ? 'selected' : ''}>Não</option>
-                                </select>
-                                <button type="button" onclick="clearAdminFilters()" class="px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-bold">LIMPAR</button>
-                            </div>
+                            <input type="text" value="${String(state.adminFilters.search || '').replace(/\"/g, '&quot;')}" oninput="setAdminFilter('search', this.value)" placeholder="Nome ou e-mail" class="jp-input md:col-span-2 text-sm">
+                            <select onchange="setAdminFilter('cidade', this.value)" class="jp-input text-sm"><option value="">Cidade</option>${cidades.map(c => `<option value="${String(c).replace(/\"/g, '&quot;')}" ${state.adminFilters.cidade === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+                            <select onchange="setAdminFilter('estado', this.value)" class="jp-input text-sm"><option value="">UF</option>${estados.map(e => `<option value="${e}" ${state.adminFilters.estado === e ? 'selected' : ''}>${e}</option>`).join('')}</select>
+                            <select onchange="setAdminFilter('perfil', this.value)" class="jp-input text-sm"><option value="">Perfil</option>${perfis.map(p => `<option value="${String(p).replace(/\"/g, '&quot;')}" ${state.adminFilters.perfil === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
+                            <div class="flex gap-2 md:col-span-1"><select onchange="setAdminFilter('presente', this.value)" class="jp-input flex-1 text-sm"><option value="">Brinde</option><option value="Sim" ${state.adminFilters.presente === 'Sim' ? 'selected' : ''}>Sim</option><option value="Não" ${state.adminFilters.presente === 'Não' ? 'selected' : ''}>Não</option></select><button type="button" onclick="clearAdminFilters()" class="jp-btn jp-btn-ghost px-2 text-[10px]">Limpar</button></div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 fade-up">
-                        <div class="kpi-card neon-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="database" class="w-3 h-3 text-blue-700"></i>Total de respostas</div>
-                            <div class="text-3xl font-oswald font-bold mt-1 text-slate-900">${total}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="heart" class="w-3 h-3 text-green-600"></i>Gosta comida jap.</div>
-                            <div class="text-3xl font-oswald font-bold text-green-700 mt-1">${m.gostaJapSim}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="thumbs-down" class="w-3 h-3 text-orange-600"></i>Não gosta jap.</div>
-                            <div class="text-3xl font-oswald font-bold text-orange-700 mt-1">${m.gostaJapNao}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="gift" class="w-3 h-3 text-indigo-600"></i>Quer presente</div>
-                            <div class="text-3xl font-oswald font-bold text-blue-700 mt-1">${m.comPresente}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3 text-cyan-600"></i>E-mails capturados</div>
-                            <div class="text-3xl font-oswald font-bold text-indigo-700 mt-1">${m.emailsValidos}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="users" class="w-3 h-3 text-slate-600"></i>Nomes cadastrados</div>
-                            <div class="text-3xl font-oswald font-bold text-slate-800 mt-1">${m.nomesInformados}</div>
-                        </div>
+                    <div class="jp-glass-panel overflow-hidden fade-up md:hidden">
+                        <div class="p-3 border-b border-slate-700 text-white font-semibold text-sm">Lista · participantes</div>
+                        ${filteredResponses.length ? filteredResponses.map(r => `
+                            <div class="p-4 border-b border-slate-700/70 bg-[#0b1224]/50">
+                                <div class="flex justify-between gap-2"><span class="font-bold text-white text-sm">${r.nomeCompleto || r.nome || 'Sem nome'}</span>
+                                <span class="text-[10px] px-2 py-1 rounded-full ${String(r.querPresente || '').toLowerCase() === 'sim' ? 'bg-[#E11D48]/30 text-[#fecdd3]' : 'bg-slate-700 text-[#CBD5F5]'}">${r.querPresente || '—'}</span></div>
+                                <div class="text-xs jp-sub mt-2 space-y-1"><div>${r.email || '—'} · CPF ${r.cpf || '—'}</div><div>${r.cidade || '—'} / ${r.estado || '—'}</div><div>Perfil: ${r.relacao || '—'}</div><div class="text-[10px] opacity-75">${r.data || ''}</div></div>
+                            </div>`).join('') : '<p class="p-6 jp-sub text-sm">Nenhum registro nos filtros atuais.</p>'}
                     </div>
-
-                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up">
-                        <h3 class="section-title"><i data-lucide="pie-chart" class="w-4 h-4 text-blue-700"></i>Painel de gráficos (12)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">1) Pizza • Brinde</div>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutPresente}"></div>
-                                    <div class="text-xs text-slate-700 space-y-1">
-                                        <div>Sim: <strong>${m.comPresente}</strong> (${pct(m.comPresente,total)}%)</div>
-                                        <div>Não: <strong>${m.semPresente}</strong> (${pct(m.semPresente,total)}%)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">2) Pizza • E-mails válidos</div>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutEmail}"></div>
-                                    <div class="text-xs text-slate-700 space-y-1">
-                                        <div>Válidos: <strong>${m.emailsValidos}</strong> (${pct(m.emailsValidos,total)}%)</div>
-                                        <div>Sem e-mail: <strong>${Math.max(0,total - m.emailsValidos)}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">3) Pizza • CPF informado</div>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutCpf}"></div>
-                                    <div class="text-xs text-slate-700 space-y-1">
-                                        <div>Com CPF: <strong>${cpfInformado}</strong> (${pct(cpfInformado,total)}%)</div>
-                                        <div>Sem CPF: <strong>${semCpf}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">4) Pizza • Prêmio escolhido</div>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutPremio}"></div>
-                                    <div class="text-xs text-slate-700 space-y-1">
-                                        <div>Escolheu: <strong>${premioInformado}</strong> (${pct(premioInformado,total)}%)</div>
-                                        <div>Sem escolha: <strong>${semPremio}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">5) Pizza • Gosta comida japonesa</div>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutGostaJa}"></div>
-                                    <div class="text-xs text-slate-700 space-y-1">
-                                        <div>Sim: <strong>${m.gostaJapSim}</strong> (${pct(m.gostaJapSim,total)}%)</div>
-                                        <div>Não: <strong>${m.gostaJapNao}</strong> (${pct(m.gostaJapNao,total)}%)</div>
-                                        <div>Sem info: <strong>${m.gostaJapSemInfo}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">6) Ranking de cidades</div>
-                                ${topCidades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxCidade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">7) Perfil dos adeptos</div>
-                                ${topPerfis.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxPerfil) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">8) Estados</div>
-                                ${topEstados.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxEstado) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">9) Faixa etária</div>
-                                ${topIdades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxIdade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">10) Frequência de consumo</div>
-                                ${topFrequencias.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxFreq) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">11) Preferência de prêmio</div>
-                                ${topPremios.slice(0,4).map(item => `<div class="flex justify-between text-xs py-1"><span>${item[0]}</span><strong>${item[1]}</strong></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">12) Consumo mais citado</div>
-                                ${topConsumo.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxConsumo) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
-                            </div>
-                        </div>
+                    <div class="jp-glass-panel overflow-hidden fade-up hidden md:block">
+                        <div class="overflow-x-auto"><table class="w-full text-left min-w-[700px]">
+                            <thead class="border-b border-slate-600 bg-black/35"><tr>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Cadastro</th>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Contato</th>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Local</th>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Preferências</th>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Brinde</th>
+                                <th class="px-5 py-3 text-xs uppercase font-bold jp-sub">Data</th>
+                            </tr></thead>
+                            <tbody class="divide-y divide-slate-700">${filteredResponses.map(r => `
+                                <tr class="hover:bg-[#E11D48]/08 transition-colors">
+                                    <td class="px-5 py-3"><div class="font-semibold text-white text-sm">${r.nomeCompleto || r.nome || 'Sem nome'}</div><div class="text-[10px] jp-sub">${r.idade ? r.idade : 'Faixa não informada'}</div></td>
+                                    <td class="px-5 py-3 text-xs text-[#CBD5F5]">${r.email || '—'}<br><span class="text-slate-500">${r.cpf || ''}</span></td>
+                                    <td class="px-5 py-3 text-xs text-white">${r.cidade || '—'} / ${r.estado || '—'}</td>
+                                    <td class="px-5 py-3 text-xs text-[#FACC15]">${r.relacao ? (String(r.relacao).length > 40 ? String(r.relacao).slice(0,38)+'…' : r.relacao) : '—'}<div class="text-[10px] jp-sub">${r.frequencia || ''}</div></td>
+                                    <td class="px-5 py-3 text-xs"><span class="${String(r.querPresente||'').toLowerCase()==='sim'?'text-[#FACC15]':'jp-sub'}">${r.querPresente || '—'}</span></td>
+                                    <td class="px-5 py-3 text-[11px] jp-sub">${r.data || '—'}</td>
+                                </tr>`).join('')}</tbody>
+                        </table></div>
                     </div>
-
-                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up space-y-4">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h3 class="section-title !mb-0"><i data-lucide="mail-plus" class="w-4 h-4 text-blue-700"></i>Envio de brindes por e-mail</h3>
-                            <div class="text-xs text-slate-600">Elegíveis: ${giftEligible.length} • Selecionados: ${selectedCount} • E-mail: ${emailRecipients.length} • WhatsApp: ${whatsappRecipients.length}</div>
+                    <div class="jp-glass-panel p-6 fade-up"><h3 class="jp-title text-base mb-4 flex items-center gap-2"><i data-lucide="sparkles" class="w-5 h-5 text-[#FACC15]"></i> Entradas recentes</h3>
+                        <div class="grid sm:grid-cols-2 gap-3">${latest.map(r => `
+                            <div class="rounded-xl bg-[#0b1224] border border-slate-700 p-4 hover:border-[#FACC15]/40 transition-colors">
+                                <div class="font-bold text-white text-sm">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
+                                <div class="text-xs text-[#E11D48] mt-1">${r.email || 'Sem e-mail'}</div>
+                                <div class="text-[10px] jp-sub mt-2">${r.data || ''}</div>
+                            </div>`).join('')}</div></div></div>`;
+            }
+            if (tab === 'brindes') {
+                return `
+                <div class="space-y-6 fade-up">
+                    <div class="jp-glass-panel p-5 border-[#FACC15]/25">
+                        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                            <div><h2 class="jp-title text-lg flex items-center gap-2"><i data-lucide="send" class="w-5 h-5 text-[#FACC15]"></i> Envio em massa AACJ</h2><p class="jp-sub text-sm mt-1">Use a seleção abaixo com os mesmos fluxos já existentes (e-mail cliente + arquivo / WhatsApp).</p></div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="sendGiftEmailsFromAdmin()" ${state.adminMailer.sending || !canSendGifts ? 'disabled' : ''} class="jp-btn jp-btn-rose ${state.adminMailer.sending || !canSendGifts ? 'opacity-40 cursor-not-allowed' : ''}">${state.adminMailer.sending ? 'Enviando…' : 'E-mail com presente'}</button>
+                                <button type="button" onclick="sendGiftWhatsAppFromAdmin()" ${whatsappRecipients.length ? '' : 'disabled'} class="jp-btn jp-btn-gold ${!whatsappRecipients.length ? 'opacity-40' : ''}">WhatsApp</button>
+                            </div></div>
+                        <p class="text-xs jp-sub mt-3 border-t border-slate-700/80 pt-3">Seleção ativa · <strong class="text-white">${selectedCount}</strong> · E-mail válido para envio · <strong class="text-white">${emailRecipients.length}</strong> · WhatsApp · <strong class="text-white">${whatsappRecipients.length}</strong> · Anexo · <strong class="text-[#FACC15]">${hasAnyGiftAttachment ? 'OK' : 'pendente'}</strong></p>
+                    </div>
+                    <div class="jp-glass-panel p-6 space-y-4 border-[#FACC15]/15">
+                        <h3 class="jp-title flex items-center gap-2"><i data-lucide="gift" class="w-5 h-5 text-[#FACC15]"></i> Brinde ao cliente · envio pontual</h3>
+                        <p class="jp-sub text-sm">Cliente aceitou o brinde?</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="setGiftClientAccepted('sim')" class="jp-btn ${gcf.accepted === 'sim' ? 'jp-btn-rose ring-2 ring-[#FACC15]' : 'jp-btn-ghost'}">Sim</button>
+                            <button type="button" onclick="setGiftClientAccepted('nao')" class="jp-btn ${gcf.accepted === 'nao' ? 'border-[#94a3b8] bg-slate-800 text-white' : 'jp-btn-ghost'}">Não</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-600 mb-2">Empresa que envia o e-mail</label>
-                                <input type="text" value="${String(state.adminMailer.senderCompany || '').replace(/"/g, '&quot;')}" oninput="state.adminMailer.senderCompany = this.value; render();" placeholder="Ex.: AACJ - Associação..." class="w-full p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                            </div>
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-600 mb-2">Nome exibido no remetente</label>
-                                <input type="text" value="${String(state.adminMailer.senderDisplayName || '').replace(/"/g, '&quot;')}" oninput="state.adminMailer.senderDisplayName = this.value; render();" placeholder="Ex.: Equipe AACJ" class="w-full p-3 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm outline-none focus:border-blue-500">
-                            </div>
+                        ${gcf.accepted === 'sim' ? `
+                        <div class="rounded-xl bg-[#0b1224] border border-slate-700 p-4 space-y-4 mt-4">
+                            <div><label class="block text-xs font-bold jp-sub uppercase tracking-wide mb-2">PDF do material de brinde</label>
+                                <input type="file" accept=".pdf,application/pdf" onchange="handleGiftClientPdf(this)" class="block w-full text-xs jp-sub file:rounded-lg file:border-0 file:bg-[#E11D48] file:text-white file:font-bold file:mr-4 file:px-4 file:py-3"></div>
+                            <p class="text-[11px] jp-sub">${gcf.pdfName ? 'Arquivo · <strong class="text-[#CBD5F5]">' + String(gcf.pdfName).replace(/</g, '') + '</strong>' : 'Nenhum PDF selecionado.'}</p>
+                            <button type="button" onclick="sendGiftClientBonus()" ${gcf.sendStatus === 'pending' ? 'disabled' : ''} class="jp-btn jp-btn-gold">Enviar para cliente</button>
+                            <p class="text-xs ${gcf.sendStatus === 'pending' ? 'text-[#FACC15]' : gcf.sendStatus === 'sent' ? 'text-green-400' : 'jp-sub'}">${gcf.sendStatus === 'pending' ? '⋯ Processando · simulação de envio (conecte API real para WhatsApp/e-mail).' : gcf.sendStatus === 'sent' ? (gcf.sendMessage || 'Concluído.') : 'Status · aguardando ação.'}</p>
+                            <p class="text-[10px] jp-sub leading-relaxed">Envio automatizado ao cliente será feito pela API oficial (WhatsApp Business / SMTP) assim que você configurar o backend · aqui apenas feedback visual demonstrativo.</p>
+                        </div>` : ''}
+                    </div>
+                    <div class="jp-glass-panel p-6 space-y-4">
+                        <h3 class="jp-title text-sm uppercase tracking-[0.12em] text-[#CBD5F5]">Configure anexos oficiais</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div><label class="jp-sub text-xs block mb-2">Empresa remetente</label><input class="jp-input" value="${String(state.adminMailer.senderCompany || '').replace(/"/g, '&quot;')}" oninput="state.adminMailer.senderCompany = this.value"></div>
+                            <div><label class="jp-sub text-xs block mb-2">Nome exibido</label><input class="jp-input" value="${String(state.adminMailer.senderDisplayName || '').replace(/\"/g, '&quot;')}" oninput="state.adminMailer.senderDisplayName = this.value"></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-600 mb-2">E-Book Culinária Japonesa Fitness (arquivo do seu computador)</label>
-                                <input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('fitness', this)" class="block w-full text-xs">
-                                <div class="text-[11px] text-slate-500 mt-2">${state.adminMailer.ebookFitness ? ('Arquivo: ' + state.adminMailer.ebookFitness.name + ' (' + formatFileSize(state.adminMailer.ebookFitness.size) + ')') : 'Nenhum arquivo selecionado.'}</div>
-                            </div>
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-600 mb-2">E-Book Curso básico de Sushi e Sashimi</label>
-                                <input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('sushi', this)" class="block w-full text-xs">
-                                <div class="text-[11px] text-slate-500 mt-2">${state.adminMailer.ebookSushi ? ('Arquivo: ' + state.adminMailer.ebookSushi.name + ' (' + formatFileSize(state.adminMailer.ebookSushi.size) + ')') : 'Nenhum arquivo selecionado.'}</div>
-                            </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="rounded-xl border border-slate-700 p-4 bg-[#0b1224]/80"><label class="text-xs jp-sub block mb-2">PDF · Fitness</label><input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('fitness', this)" class="block w-full text-xs jp-sub">${state.adminMailer.ebookFitness ? '<p class="text-[11px] text-[#CBD5F5] mt-2">' + state.adminMailer.ebookFitness.name + '</p>' : ''}</div>
+                            <div class="rounded-xl border border-slate-700 p-4 bg-[#0b1224]/80"><label class="text-xs jp-sub block mb-2">PDF · Sushi / Sashimi</label><input type="file" accept=".pdf,.epub,.zip,.doc,.docx" onchange="handleEbookUpload('sushi', this)" class="block w-full text-xs jp-sub">${state.adminMailer.ebookSushi ? '<p class="text-[11px] text-[#CBD5F5] mt-2">' + state.adminMailer.ebookSushi.name + '</p>' : ''}</div>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="selectAllGiftRecipientsFromFiltered()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">SELECIONAR TODOS ELEGÍVEIS</button>
-                            <button type="button" onclick="clearGiftSelection()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">LIMPAR SELEÇÃO</button>
-                            <button type="button" onclick="sendGiftEmailsFromAdmin()" ${state.adminMailer.sending || !canSendGifts ? 'disabled' : ''} class="bg-blue-700 text-black px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50">${state.adminMailer.sending ? 'ENVIANDO...' : 'ENVIAR E-MAIL COM PRESENTE'}</button>
-                            <button type="button" onclick="sendGiftWhatsAppFromAdmin()" class="bg-emerald-700 text-black px-3 py-2 rounded-lg text-xs font-bold">ENVIAR VIA WHATSAPP</button>
+                            <button type="button" onclick="selectAllGiftRecipientsFromFiltered()" class="jp-btn jp-btn-ghost text-[10px]">Selecionar todos elegíveis</button>
+                            <button type="button" onclick="clearGiftSelection()" class="jp-btn jp-btn-ghost text-[10px]">Limpar seleção</button>
                         </div>
-                        <div class="max-h-56 overflow-auto border rounded-xl bg-white">
-                            ${giftEligible.length ? giftEligible.map(r => `
-                                <label class="flex items-start gap-3 p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" ${state.adminMailer.selectedIds[String(r.id)] ? 'checked' : ''} onchange="toggleGiftRecipient('${String(r.id).replace(/'/g, "\\'")}', this.checked)" class="mt-1">
-                                    <div>
-                                        <div class="text-sm font-bold text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
-                                        <div class="text-xs text-blue-700">${r.email || 'Sem e-mail'}</div>
-                                        <div class="text-[11px] text-slate-500">Entrega: ${r.receberBrindeVia || 'Não informado'} • WhatsApp: ${r.whatsapp || '-'}</div>
-                                        <div class="text-[11px] text-slate-500">Prêmio: ${r.premioDesejado || 'Não informado'}</div>
-                                    </div>
-                                </label>
-                            `).join('') : '<div class="p-3 text-sm text-slate-500">Nenhum cadastro elegível nos filtros atuais.</div>'}
+                        <div class="max-h-72 overflow-auto rounded-xl border border-slate-700 bg-[#070b14]">${giftEligible.length ? giftEligible.map(r => `
+                            <label class="flex gap-3 p-3 border-b border-slate-800 cursor-pointer hover:bg-[#E11D48]/10">
+                                <input type="checkbox" class="accent-[#E11D48] mt-1" ${state.adminMailer.selectedIds[String(r.id)] ? 'checked' : ''} onchange="toggleGiftRecipient('${String(r.id).replace(/'/g, "\\'")}', this.checked)">
+                                <div class="text-sm text-white">${r.nomeCompleto || r.nome}</div>
+                                <div class="flex-1 text-xs jp-sub text-right">${r.email || ''} · ${r.receberBrindeVia || ''}</div>
+                            </label>`).join('') : '<p class="p-4 jp-sub text-sm text-center">Nenhum cadastro elegível com os filtros da lista principal (use filtros na aba Cadastros).</p>'}</div>
+                    </div>
+                </div>`;
+            }
+
+            const loadSkel = state.adminSyncLoading ? `
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">${[1,2,3,4,5,6].map(() => '<div class="jp-skeleton h-24 rounded-xl"></div>').join('')}</div>` : '';
+
+            return `
+                <div class="space-y-6 fade-up">${loadSkel}
+                    <div class="jp-glass-panel p-5 mb-2">
+                        <p class="text-xs uppercase tracking-[0.2em] text-[#CBD5F5] font-semibold mb-2">Pulse operacional · culinária japonesa</p>
+                        <p class="text-sm jp-sub leading-relaxed">Indicadores alinhados ao censo AACJ (<strong class="text-white">${total}</strong> linhas brutas).</p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <button type="button" onclick="setAdminTab('lista')" class="jp-btn jp-btn-ghost text-[10px]">Ver lista</button>
+                            <button type="button" onclick="setAdminTab('relatorios')" class="jp-btn jp-btn-ghost text-[10px]">Exportar dados</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 fade-up">
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2 font-bold tracking-wide"><i data-lucide="database" class="w-3 h-3 text-[#FACC15]"></i>Respostas</div>
+                            <div class="text-3xl font-bold mt-1 text-white tracking-tight">${total}</div>
+                        </div>
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2"><i data-lucide="heart" class="w-3 h-3 text-green-400"></i>Gosta · Sim</div>
+                            <div class="text-3xl font-bold mt-1 text-green-400">${m.gostaJapSim}</div>
+                        </div>
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2"><i data-lucide="thumbs-down" class="w-3 h-3 text-orange-400"></i>Não gosta</div>
+                            <div class="text-3xl font-bold mt-1 text-orange-400">${m.gostaJapNao}</div>
+                        </div>
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2"><i data-lucide="gift" class="w-3 h-3 text-[#FACC15]"></i>Brinde · Sim</div>
+                            <div class="text-3xl font-bold mt-1 text-[#FACC15]">${m.comPresente}</div>
+                        </div>
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3 text-[#CBD5F5]"></i>E-mails</div>
+                            <div class="text-3xl font-bold mt-1 text-white">${m.emailsValidos}</div>
+                        </div>
+                        <div class="jp-kpi-card">
+                            <div class="text-[10px] uppercase jp-sub flex items-center gap-2"><i data-lucide="users" class="w-3 h-3 text-[#CBD5F5]"></i>Nomes</div>
+                            <div class="text-3xl font-bold mt-1 text-white">${m.nomesInformados}</div>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap gap-3 justify-end items-center">
-                        ${refreshBtn}
-                        <button onclick="exportExcel()" class="bg-white hover:bg-slate-100 text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5">EXCEL</button>
-                        <button onclick="exportPDF()" class="bg-white hover:bg-slate-100 text-black border border-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5">PDF</button>
-                    </div>
-                    <div class="glass-panel rounded-2xl shadow-sm border p-3 md:p-0 fade-up">
-                        <div class="md:hidden space-y-3">
-                            ${filteredResponses.length ? filteredResponses.map(r => `
-                                <div class="rounded-xl border border-slate-200 bg-white p-3">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <div class="font-bold text-slate-900 text-sm">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
-                                            <div class="text-[11px] text-slate-500">${r.idade || 'Sem idade'}</div>
-                                        </div>
-                                        <span class="px-2 py-1 rounded-full text-[11px] ${String(r.querPresente || '').toLowerCase() === 'sim' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600'}">${r.querPresente || 'Não informado'}</span>
+                    <div class="jp-glass-panel p-5 md:p-6 fade-up">
+                        <h3 class="jp-title flex items-center gap-2 text-lg mb-2"><i data-lucide="pie-chart" class="w-5 h-5 text-[#FACC15]"></i>Painel visual · doze frentes</h3>
+                        <p class="text-xs jp-sub mb-5">Barras rose→gold · pizzas com contraste no escuro · animação ao carregar métricas filtradas.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#FACC15]/35 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">1 · Pizza · Brinde</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full jp-donut shrink-0" style="background:${donutPresente}"></div>
+                                    <div class="text-xs text-[#CBD5F5] space-y-1 leading-relaxed">
+                                        <div>Sim: <strong class="text-white">${m.comPresente}</strong> <span class="jp-sub">(${pct(m.comPresente,total)}%)</span></div>
+                                        <div>Não: <strong class="text-white">${m.semPresente}</strong> <span class="jp-sub">(${pct(m.semPresente,total)}%)</span></div>
                                     </div>
-                                    <div class="mt-2 text-xs text-slate-700"><strong>E-mail:</strong> ${r.email || '-'}</div>
-                                    <div class="text-xs text-slate-700"><strong>CPF:</strong> ${r.cpf || '-'}</div>
-                                    <div class="text-xs text-slate-700"><strong>Local:</strong> ${r.cidade || '-'} / ${r.estado || '-'}</div>
-                                    <div class="text-xs text-slate-700"><strong>Perfil:</strong> ${r.relacao || '-'}</div>
-                                    <div class="text-[11px] text-slate-500 mt-1"><strong>Data:</strong> ${r.data || '-'}</div>
                                 </div>
-                            `).join('') : '<div class="text-sm text-slate-500 p-2">Nenhum resultado com os filtros atuais.</div>'}
-                        </div>
-                        <div class="hidden md:block overflow-x-auto">
-                        <table class="w-full text-left min-w-[600px]">
-                            <thead class="bg-slate-900 border-b border-slate-800">
-                                <tr>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Participante</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Contato</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Localização</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Perfil</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Presente</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-300">Data</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                ${filteredResponses.map(r => `
-                                    <tr class="hover:bg-blue-50 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
-                                            <div class="text-[10px] text-slate-500">${r.idade || 'Sem idade'}</div>
-                                        </td>
-                                        <td class="px-6 py-4 text-xs text-slate-700">${r.email || '-'}<br><span class="text-slate-500">${r.cpf || ''}</span></td>
-                                        <td class="px-6 py-4 text-sm text-slate-800">${r.cidade || '-'} / ${r.estado || '-'}</td>
-                                        <td class="px-6 py-4 text-xs font-medium text-blue-700">${r.relacao || '-'}</td>
-                                        <td class="px-6 py-4 text-xs">
-                                            <span class="px-2 py-1 rounded-full ${String(r.querPresente || '').toLowerCase() === 'sim' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600'}">
-                                                ${r.querPresente || 'Não informado'}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-xs text-slate-500">${r.data || '-'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#FACC15]/35 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">2 · Pizza · E-mails</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full jp-donut shrink-0" style="background:${donutEmail}"></div>
+                                    <div class="text-xs text-[#CBD5F5] space-y-1 leading-relaxed">
+                                        <div>Válidos: <strong class="text-white">${m.emailsValidos}</strong> <span class="jp-sub">(${pct(m.emailsValidos,total)}%)</span></div>
+                                        <div>Sem e-mail: <strong class="text-white">${Math.max(0,total - m.emailsValidos)}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#FACC15]/35 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">3 · Pizza · CPF</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full jp-donut shrink-0" style="background:${donutCpf}"></div>
+                                    <div class="text-xs text-[#CBD5F5] space-y-1 leading-relaxed">
+                                        <div>Com CPF: <strong class="text-white">${cpfInformado}</strong> <span class="jp-sub">(${pct(cpfInformado,total)}%)</span></div>
+                                        <div>Sem CPF: <strong class="text-white">${semCpf}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#FACC15]/35 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">4 · Pizza · Prêmio escolhido</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full jp-donut shrink-0" style="background:${donutPremio}"></div>
+                                    <div class="text-xs text-[#CBD5F5] space-y-1 leading-relaxed">
+                                        <div>Escolheu: <strong class="text-white">${premioInformado}</strong> <span class="jp-sub">(${pct(premioInformado,total)}%)</span></div>
+                                        <div>Sem escolha: <strong class="text-white">${semPremio}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#FACC15]/35 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">5 · Pizza · Gosta comida japonesa</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full jp-donut shrink-0" style="background:${donutGostaJa}"></div>
+                                    <div class="text-xs text-[#CBD5F5] space-y-1 leading-relaxed">
+                                        <div>Sim: <strong class="text-white">${m.gostaJapSim}</strong> <span class="jp-sub">(${pct(m.gostaJapSim,total)}%)</span></div>
+                                        <div>Não: <strong class="text-white">${m.gostaJapNao}</strong> <span class="jp-sub">(${pct(m.gostaJapNao,total)}%)</span></div>
+                                        <div>Sem info: <strong class="text-white">${m.gostaJapSemInfo}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">6 · Cidades (top 4)</div>
+                                ${barCell(topCidades, maxCidade)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">7 · Perfil dos adeptos</div>
+                                ${barCell(topPerfis, maxPerfil)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">8 · Estados</div>
+                                ${barCell(topEstados, maxEstado)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">9 · Faixa etária</div>
+                                ${barCell(topIdades, maxIdade)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">10 · Frequência de consumo</div>
+                                ${barCell(topFrequencias, maxFreq)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">11 · Preferência de prêmio</div>
+                                ${barCell(topPremios, maxPremio)}
+                            </div>
+                            <div class="rounded-xl border border-slate-700/70 bg-[#0b1224]/90 p-4 shadow-lg shadow-black/20 hover:border-[#E11D48]/30 transition-all duration-300">
+                                <div class="text-[11px] font-bold uppercase tracking-wide text-[#CBD5F5] mb-3">12 · Consumo mais citado</div>
+                                ${barCell(topConsumo, maxConsumo)}
+                            </div>
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up">
-                        <h3 class="section-title"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-700"></i>Novos cadastros (nome + e-mail)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            ${latest.map(r => `
-                                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                                    <div class="font-bold text-sm text-slate-900">${r.nomeCompleto || r.nome || 'Sem nome'}</div>
-                                    <div class="text-xs text-blue-700">${r.email || 'Sem e-mail'}</div>
-                                    <div class="text-[10px] text-slate-500 mt-1">${r.data || '-'}</div>
-                                </div>
-                            `).join('')}
+                    <div class="jp-glass-panel p-5 flex flex-wrap items-center justify-between gap-3 fade-up">
+                        <p class="text-sm jp-sub">Sincronize com o Drive para métricas atualizadas. Exportações e lista detalhada estão nas abas laterais.</p>
+                        <div class="flex flex-wrap gap-2">${refreshBtn}
+                            <button type="button" onclick="setAdminTab('relatorios')" class="jp-btn jp-btn-gold text-xs">Relatórios</button>
                         </div>
                     </div>
                 </div>
@@ -1931,6 +2739,7 @@ Estamos enviando seu material agora.`;
             } else {
                 setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 100);
             }
+            syncAdminBodyClass();
         }
 
         window.addEventListener('online', () => { state.isOnline = true; render(); });
@@ -1939,6 +2748,16 @@ Estamos enviando seu material agora.`;
         window.onload = () => {
             render();
         };
+
+        function syncAdminBodyClass() {
+            try {
+                if (state.currentView === 'admin') {
+                    document.body.classList.add('admin-dark-active');
+                } else {
+                    document.body.classList.remove('admin-dark-active');
+                }
+            } catch (e) { /* ignore */ }
+        }
     </script>
 </body>
 </html>
