@@ -231,9 +231,16 @@
             },
             driveConfig: JSON.parse(localStorage.getItem('censo_drive_config') || '{"folder": "Censo_Japones_2026", "filename": "data.json", "autoSync": true}'),
             formData: {
+                gostaComidaJaponesa: '',
                 querPresente: '',
                 nomeCompleto: '',
                 cpf: '',
+                dataNascimento: '',
+                cidadeMora: '',
+                estadoMora: '',
+                enderecoRua: '',
+                enderecoNumero: '',
+                receberComunicacao: '',
                 email: '',
                 receberBrindeVia: '',
                 whatsapp: '',
@@ -244,7 +251,8 @@
                 premioDesejado: '',
                 frequencia: '',
                 consumo: [],
-                consumoOutros: ''
+                consumoOutros: '',
+                fazSushiCasa: ''
             },
             formSubmitting: false,
             isOnline: navigator.onLine,
@@ -562,11 +570,34 @@
         }
 
         // Handlers de Dados
+        function closeSystemPage(message) {
+            alert(message || 'Resposta "Não" selecionada. O sistema será encerrado agora.');
+            setTimeout(function () {
+                try {
+                    window.open('', '_self');
+                    window.close();
+                } catch (e) { /* ignore */ }
+                // Fallback para navegadores que bloqueiam window.close.
+                try {
+                    document.documentElement.innerHTML = '<head><title>Sistema encerrado</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Arial,sans-serif;background:#111;color:#fff;"><div style="text-align:center;padding:24px;"><h2 style="margin:0 0 8px;">Sistema encerrado</h2><p style="margin:0;opacity:.85;">Página finalizada automaticamente.</p></div></body>';
+                } catch (e2) { /* ignore */ }
+            }, 80);
+        }
+
         function handleInputChange(field, value) {
             state.formData[field] = value;
             if (field === 'receberBrindeVia' && value !== 'WhatsApp') {
                 state.formData.whatsapp = '';
             }
+        }
+
+        function onSelectGostaComidaJaponesa(opt) {
+            handleInputChange('gostaComidaJaponesa', opt);
+            if (opt === 'Não') {
+                saveResponse({ afterSave: 'close' });
+                return;
+            }
+            render();
         }
 
         function handleConfigChange(field, value) {
@@ -587,28 +618,37 @@
             render();
         }
 
-        function saveResponse() {
+        function blankFormState() {
+            return { gostaComidaJaponesa: '', querPresente: '', nomeCompleto: '', cpf: '', dataNascimento: '', cidadeMora: '', estadoMora: '', enderecoRua: '', enderecoNumero: '', receberComunicacao: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '', fazSushiCasa: '' };
+        }
+
+        function saveResponse(saveOpts) {
+            saveOpts = saveOpts || {};
+            const afterClose = saveOpts.afterSave === 'close';
             if (state.formSubmitting) {
                 return;
             }
-            if (String(state.formData.querPresente || '').toLowerCase() === 'sim') {
-                const via = String(state.formData.receberBrindeVia || '').trim();
-                if (!via) {
-                    alert('Escolha como deseja receber o brinde: E-mail ou WhatsApp.');
+            const apenasGostaNao = String(state.formData.gostaComidaJaponesa || '').trim() === 'Não';
+            if (!apenasGostaNao) {
+                if (String(state.formData.querPresente || '').toLowerCase() === 'sim') {
+                    const via = String(state.formData.receberBrindeVia || '').trim();
+                    if (!via) {
+                        alert('Escolha como deseja receber o brinde: E-mail ou WhatsApp.');
+                        return;
+                    }
+                    if (via === 'WhatsApp' && !normalizeWhatsAppNumber(state.formData.whatsapp)) {
+                        alert('Informe um número de WhatsApp válido para receber o brinde.');
+                        return;
+                    }
+                    if (via === 'E-mail' && !String(state.formData.email || '').includes('@')) {
+                        alert('Informe um e-mail válido para receber o brinde.');
+                        return;
+                    }
+                }
+                if (state.formData.consumo.includes('Outros') && !String(state.formData.consumoOutros || '').trim()) {
+                    alert('Você marcou "Outros". Digite qual item deseja informar.');
                     return;
                 }
-                if (via === 'WhatsApp' && !normalizeWhatsAppNumber(state.formData.whatsapp)) {
-                    alert('Informe um número de WhatsApp válido para receber o brinde.');
-                    return;
-                }
-                if (via === 'E-mail' && !String(state.formData.email || '').includes('@')) {
-                    alert('Informe um e-mail válido para receber o brinde.');
-                    return;
-                }
-            }
-            if (state.formData.consumo.includes('Outros') && !String(state.formData.consumoOutros || '').trim()) {
-                alert('Você marcou "Outros". Digite qual item deseja informar.');
-                return;
             }
             const consumoNormalizado = (state.formData.consumo || []).map(function (item) {
                 if (item === 'Outros') {
@@ -633,8 +673,13 @@
                         try {
                             localStorage.setItem('censo_responses', JSON.stringify(state.responses));
                         } catch (e) { /* ignore */ }
-                        setView('success');
-                        state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+                        state.formData = blankFormState();
+                        if (afterClose) {
+                            closeSystemPage('Resposta registrada no relatório (não gosta de comida japonesa). O sistema será encerrado.');
+                            render();
+                        } else {
+                            setView('success');
+                        }
                     })
                     .withFailureHandler(function (err) {
                         state.formSubmitting = false;
@@ -657,8 +702,13 @@
                     try {
                         localStorage.setItem('censo_responses', JSON.stringify(state.responses));
                     } catch (e) { /* ignore */ }
-                    setView('success');
-                    state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+                    state.formData = blankFormState();
+                    if (afterClose) {
+                        closeSystemPage('Resposta registrada no relatório (não gosta de comida japonesa). O sistema será encerrado.');
+                        render();
+                    } else {
+                        setView('success');
+                    }
                 }).catch(function (err) {
                     state.formSubmitting = false;
                     render();
@@ -671,8 +721,13 @@
             state.responses.push(newResponse);
             localStorage.setItem('censo_responses', JSON.stringify(state.responses));
 
-            setView('success');
-            state.formData = { querPresente: '', nomeCompleto: '', cpf: '', email: '', receberBrindeVia: '', whatsapp: '', cidade: '', estado: '', idade: '', relacao: '', premioDesejado: '', frequencia: '', consumo: [], consumoOutros: '' };
+            state.formData = blankFormState();
+            if (afterClose) {
+                closeSystemPage('Resposta registrada no relatório (não gosta de comida japonesa). O sistema será encerrado.');
+                render();
+            } else {
+                setView('success');
+            }
         }
 
         // Exportação
@@ -684,6 +739,9 @@
                 semPresente: 0,
                 emailsValidos: 0,
                 nomesInformados: 0,
+                gostaJapSim: 0,
+                gostaJapNao: 0,
+                gostaJapSemInfo: 0,
                 cidadeMap: {},
                 perfilMap: {},
                 estadoMap: {},
@@ -693,6 +751,10 @@
             };
             for (let i = 0; i < rows.length; i++) {
                 const r = rows[i] || {};
+                const gj = String(r.gostaComidaJaponesa || '').trim().toLowerCase();
+                if (gj === 'sim') metrics.gostaJapSim += 1;
+                else if (gj === 'não' || gj === 'nao') metrics.gostaJapNao += 1;
+                else metrics.gostaJapSemInfo += 1;
                 const quer = String(r.querPresente || '').toLowerCase() === 'sim';
                 if (quer) metrics.comPresente += 1;
                 else metrics.semPresente += 1;
@@ -999,20 +1061,31 @@ Estamos enviando seu material agora.`;
             const m = getDashboardMetrics();
             const rows = state.responses.map((r, i) => ({
                 '#': i + 1,
+                GostaComidaJaponesa: r.gostaComidaJaponesa || '',
                 Nome: r.nomeCompleto || r.nome || '',
                 CPF: r.cpf || '',
+                DataNascimento: r.dataNascimento || '',
                 Email: r.email || '',
                 Cidade: r.cidade || '',
                 Estado: r.estado || '',
+                CidadeMora: r.cidadeMora || '',
+                EstadoMora: r.estadoMora || '',
+                EnderecoRua: r.enderecoRua || '',
+                EnderecoNumero: r.enderecoNumero || '',
+                ReceberComunicacao: r.receberComunicacao || '',
                 Idade: r.idade || '',
                 Perfil: r.relacao || '',
                 Frequencia: r.frequencia || '',
+                FazSushiEmCasa: r.fazSushiCasa || '',
                 Presente: r.querPresente || '',
                 Premio: r.premioDesejado || '',
                 Data: r.data || ''
             }));
             const resumo = [
                 { Indicador: 'Total de respostas', Valor: m.total },
+                { Indicador: 'Gosta comida japonesa (Sim)', Valor: m.gostaJapSim },
+                { Indicador: 'Gosta comida japonesa (Não)', Valor: m.gostaJapNao },
+                { Indicador: 'Gosta comida japonesa (Sem info)', Valor: m.gostaJapSemInfo },
                 { Indicador: 'Quer presente', Valor: m.comPresente },
                 { Indicador: 'Sem presente', Valor: m.semPresente },
                 { Indicador: 'E-mails válidos', Valor: m.emailsValidos },
@@ -1133,7 +1206,40 @@ Estamos enviando seu material agora.`;
                         </h2>
                         <div class="space-y-8">
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1. Você quer ganhar um presente grátis?</label>
+                                <label class="block font-bold text-gray-700">1. Você gosta de comida japonesa?</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['Sim', 'Não'].map(opt => `
+                                        <button onclick="onSelectGostaComidaJaponesa('${opt}')" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.gostaComidaJaponesa === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">2. Cidade / Estado</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <input type="text" oninput="handleInputChange('cidade', this.value); handleInputChange('cidadeMora', this.value);" value="${state.formData.cidade}" placeholder="Cidade" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <select onchange="handleInputChange('estado', this.value); handleInputChange('estadoMora', this.value);" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                        <option value="">Estado</option>
+                                        ${estados.map(e => `<option value="${e}" ${state.formData.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">3. Idade</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['10 a 14', '15 a 17', '18 a 24', '25 a 34', '35 a 44', '45 a 54', '55+'].map(opt => `
+                                        <button onclick="handleInputChange('idade', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.idade === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">Vai participar?</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     ${['Sim', 'Não'].map(opt => `
                                         <button onclick="handleInputChange('querPresente', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.querPresente === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
@@ -1144,40 +1250,78 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             ${state.formData.querPresente === 'Sim' ? `
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                                <p class="font-bold text-[#bc002d] text-lg">Você quer ganhar um presente grátis?</p>
-                                <p class="text-sm text-gray-700 mt-1">Insira as informações abaixo e cadastre-se na AACJ - Associação dos Adeptos da Culinária Japonesa.</p>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.1 Nome completo</label>
-                                <input type="text" oninput="handleInputChange('nomeCompleto', this.value)" value="${state.formData.nomeCompleto}" placeholder="Digite seu nome completo" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.2 CPF</label>
-                                <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.3 E-mail</label>
-                                <input type="email" oninput="handleInputChange('email', this.value)" value="${state.formData.email}" placeholder="seuemail@exemplo.com" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.4 O que você gostaria de ganhar?</label>
+                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                                <p class="font-bold text-[#bc002d] text-lg">Antes de finalizar, que tal dar um passo a mais?</p>
+                                <p class="text-sm text-gray-700">Associe-se à AACJB – Associação dos Adeptos da Culinária Japonesa no Brasil. Ao se tornar membro, você não paga nada e já escolhe um brinde exclusivo e gratuito.</p>
+                                <label class="block font-bold text-gray-700">Qual brinde você escolhe?</label>
                                 <div class="space-y-2">
-                                    ${['E-Book - Culinária Japonesa Fitness', 'E-Book - Curso básico de Sushi e Sashimi'].map(opt => `
-                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                    ${['e-Book Curso de Sushi e Sashimi - Passo a passo', 'e-Book Receitas de Culinária Japonesa Fitness'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
                                             <input type="radio" name="premioDesejado" ${state.formData.premioDesejado === opt ? 'checked' : ''} onchange="handleInputChange('premioDesejado', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
                                             <span class="text-sm font-medium">${opt}</span>
                                         </label>
                                     `).join('')}
                                 </div>
+                                <p class="text-sm text-gray-700">Além disso, sua participação fortalece sua cidade e ajuda a conquistar o título de maior número de adeptos da culinária japonesa do Brasil.</p>
+                            </div>
+
+                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                                <p class="font-bold text-[#bc002d] text-lg">Cadastro de associação AACJB</p>
+                                <p class="text-sm text-gray-700 mt-1">Preencha os dados abaixo para concluir sua participação.</p>
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.5 Como deseja receber seu brinde?</label>
+                                <label class="block font-bold text-gray-700">4.1 Nome completo</label>
+                                <input type="text" oninput="handleInputChange('nomeCompleto', this.value)" value="${state.formData.nomeCompleto}" placeholder="Digite seu nome completo" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.2 CPF</label>
+                                <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.3 Data de nascimento</label>
+                                <input type="date" oninput="handleInputChange('dataNascimento', this.value)" value="${state.formData.dataNascimento || ''}" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.4 Cidade que mora / Estado</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <input type="text" oninput="handleInputChange('cidadeMora', this.value)" value="${state.formData.cidadeMora || state.formData.cidade}" placeholder="Cidade que mora" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <select onchange="handleInputChange('estadoMora', this.value)" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                        <option value="">Estado</option>
+                                        ${estados.map(e => `<option value="${e}" ${(state.formData.estadoMora || state.formData.estado) === e ? 'selected' : ''}>${e}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.5 Endereço</label>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <input type="text" oninput="handleInputChange('enderecoRua', this.value)" value="${state.formData.enderecoRua || ''}" placeholder="Rua" class="md:col-span-2 w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <input type="text" oninput="handleInputChange('enderecoNumero', this.value)" value="${state.formData.enderecoNumero || ''}" placeholder="Nº" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.6 Quer receber comunicação da AACJB?</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${['Sim', 'Não'].map(opt => `
+                                        <button onclick="handleInputChange('receberComunicacao', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.receberComunicacao === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.7 E-mail (para contato e envio de brinde)</label>
+                                <input type="email" oninput="handleInputChange('email', this.value)" value="${state.formData.email}" placeholder="seuemail@exemplo.com" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">4.8 Como deseja receber seu brinde?</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     ${['E-mail', 'WhatsApp'].map(opt => `
                                         <button onclick="handleInputChange('receberBrindeVia', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.receberBrindeVia === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
@@ -1189,40 +1333,14 @@ Estamos enviando seu material agora.`;
 
                             ${state.formData.receberBrindeVia === 'WhatsApp' ? `
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">1.6 Número do WhatsApp</label>
+                                <label class="block font-bold text-gray-700">4.9 Número do WhatsApp</label>
                                 <input type="text" oninput="handleInputChange('whatsapp', this.value)" value="${state.formData.whatsapp || ''}" placeholder="(11) 99999-9999" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
                             </div>
                             ` : ''}
-                            ` : ''}
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">2. Cidade</label>
-                                <input type="text" oninput="handleInputChange('cidade', this.value)" value="${state.formData.cidade}" placeholder="Sua cidade" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">3. Estado</label>
-                                <select onchange="handleInputChange('estado', this.value)" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    <option value="">Selecione...</option>
-                                    ${estados.map(e => `<option value="${e}" ${state.formData.estado === e ? 'selected' : ''}>${e}</option>`).join('')}
-                                </select>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">4. Idade</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    ${['10 a 14', '15 a 17', '18 a 24', '25 a 34', '35 a 44', '45 a 54', '55+'].map(opt => `
-                                        <button onclick="handleInputChange('idade', '${opt}'); render();" class="p-3 text-sm border-2 rounded-xl transition-all ${state.formData.idade === opt ? 'border-[#bc002d] bg-red-50 text-red-700 font-bold' : 'border-gray-200 hover:border-gray-300'}">
-                                            ${opt}
-                                        </button>
-                                    `).join('')}
-                                </div>
-                            </div>
-
                             <div class="space-y-3">
                                 <label class="block font-bold text-gray-700">5. Qual sua relação com a culinária japonesa?</label>
                                 <div class="space-y-2">
-                                    ${['Não gosto', 'Nunca experimentei', 'Interessante', 'Gosto muito', 'Amo (Peço sempre)'].map(opt => `
+                                    ${['Não gosto', 'Nunca experimentei, mas gostaria', 'Gosto muito - Amo', 'Sou fanático e adepto - até faço em casa'].map(opt => `
                                         <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
                                             <input type="radio" name="relacao" ${state.formData.relacao === opt ? 'checked' : ''} onchange="handleInputChange('relacao', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
                                             <span class="text-sm font-medium">${opt}</span>
@@ -1232,7 +1350,7 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">6. Com que frequência consome?</label>
+                                <label class="block font-bold text-gray-700">6. Com que frequência consome no mês?</label>
                                 <div class="space-y-2">
                                     ${['Nunca', 'Raramente', '1x por mês', '2 a 4x por mês', 'Toda semana', 'Várias vezes', 'Quando posso'].map(opt => `
                                         <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
@@ -1244,9 +1362,9 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">7. Você consome:</label>
+                                <label class="block font-bold text-gray-700">7. O que você mais gosta?</label>
                                 <div class="grid grid-cols-2 gap-3">
-                                    ${['Sushi', 'Sashimi', 'Temaki', 'Yakisoba', 'Hot Roll', 'Outros'].map(opt => `
+                                    ${['Sushi', 'Sashimi', 'Temaki', 'Hot Roll', 'Outros'].map(opt => `
                                         <label class="flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${state.formData.consumo.includes(opt) ? 'border-[#bc002d] bg-red-50' : 'border-gray-200'}">
                                             <input type="checkbox" onchange="toggleCheckbox('consumo', '${opt}')" ${state.formData.consumo.includes(opt) ? 'checked' : ''} class="w-5 h-5 accent-[#bc002d]">
                                             <span class="text-sm font-bold">${opt}</span>
@@ -1261,12 +1379,35 @@ Estamos enviando seu material agora.`;
                                 ` : ''}
                             </div>
 
-                            <button onclick="saveResponse()" ${state.formSubmitting ? 'disabled' : ''} class="w-full bg-[#bc002d] text-white py-5 rounded-xl text-xl font-bold uppercase hover:bg-red-700 shadow-lg mt-8 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">8. Você faz sushi em casa?</label>
+                                <div class="space-y-2">
+                                    ${['Sim', 'Não', 'Queria apreender e fazer'].map(opt => `
+                                        <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer border-2 border-transparent hover:border-[#bc002d]">
+                                            <input type="radio" name="fazSushiCasa" ${state.formData.fazSushiCasa === opt ? 'checked' : ''} onchange="handleInputChange('fazSushiCasa', '${opt}')" class="w-5 h-5 accent-[#bc002d]">
+                                            <span class="text-sm font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <button onclick="saveResponse()" ${state.formSubmitting ? 'disabled' : ''} class="w-full bg-green-600 text-white py-5 rounded-xl text-xl font-bold uppercase hover:bg-green-700 shadow-lg shadow-green-900/20 mt-8 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
                                 ${state.formSubmitting ? `
                                     <span class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                                     Enviando...
-                                ` : 'ENVIAR'}
+                                ` : `<i data-lucide="send" class="w-7 h-7 text-white"></i><span>ENVIAR</span>`}
                             </button>
+                            ` : state.formData.querPresente === 'Não' ? `
+                            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
+                                <p class="text-sm text-gray-700">Você escolheu não participar da associação.</p>
+                                <button onclick="saveResponse()" ${state.formSubmitting ? 'disabled' : ''} class="w-full bg-red-600 text-white py-5 rounded-xl text-xl font-bold uppercase hover:bg-red-700 shadow-lg shadow-red-900/25 mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                                    ${state.formSubmitting ? `
+                                        <span class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                        Enviando...
+                                    ` : `<i data-lucide="send" class="w-7 h-7 text-white"></i><span>ENVIAR</span>`}
+                                </button>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -1381,6 +1522,7 @@ Estamos enviando seu material agora.`;
             const donutEmail = donutGradient([m.emailsValidos, Math.max(0, total - m.emailsValidos)], ['#0ea5e9', '#cbd5e1']);
             const donutCpf = donutGradient([cpfInformado, semCpf], ['#4f46e5', '#cbd5e1']);
             const donutPremio = donutGradient([premioInformado, semPremio], ['#1d4ed8', '#cbd5e1']);
+            const donutGostaJa = donutGradient([m.gostaJapSim, m.gostaJapNao, m.gostaJapSemInfo], ['#16a34a', '#ea580c', '#cbd5e1']);
             return `
                 <div class="space-y-6 soft-grid rounded-2xl p-1">
                     <div class="glass-panel rounded-2xl border shadow-sm p-4 fade-up sticky top-14 z-20">
@@ -1425,10 +1567,18 @@ Estamos enviando seu material agora.`;
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 fade-up">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 fade-up">
                         <div class="kpi-card neon-card">
                             <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="database" class="w-3 h-3 text-blue-700"></i>Total de respostas</div>
                             <div class="text-3xl font-oswald font-bold mt-1 text-slate-900">${total}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="heart" class="w-3 h-3 text-green-600"></i>Gosta comida jap.</div>
+                            <div class="text-3xl font-oswald font-bold text-green-700 mt-1">${m.gostaJapSim}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="thumbs-down" class="w-3 h-3 text-orange-600"></i>Não gosta jap.</div>
+                            <div class="text-3xl font-oswald font-bold text-orange-700 mt-1">${m.gostaJapNao}</div>
                         </div>
                         <div class="kpi-card">
                             <div class="text-xs uppercase text-slate-500 flex items-center gap-2"><i data-lucide="gift" class="w-3 h-3 text-indigo-600"></i>Quer presente</div>
@@ -1445,7 +1595,7 @@ Estamos enviando seu material agora.`;
                     </div>
 
                     <div class="glass-panel rounded-2xl border shadow-sm p-5 fade-up">
-                        <h3 class="section-title"><i data-lucide="pie-chart" class="w-4 h-4 text-blue-700"></i>Painel de gráficos (11)</h3>
+                        <h3 class="section-title"><i data-lucide="pie-chart" class="w-4 h-4 text-blue-700"></i>Painel de gráficos (12)</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
                                 <div class="text-xs font-bold uppercase text-slate-600 mb-3">1) Pizza • Brinde</div>
@@ -1488,31 +1638,42 @@ Estamos enviando seu material agora.`;
                                 </div>
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">5) Ranking de cidades</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-3">5) Pizza • Gosta comida japonesa</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-20 h-20 rounded-full border border-slate-300" style="background:${donutGostaJa}"></div>
+                                    <div class="text-xs text-slate-700 space-y-1">
+                                        <div>Sim: <strong>${m.gostaJapSim}</strong> (${pct(m.gostaJapSim,total)}%)</div>
+                                        <div>Não: <strong>${m.gostaJapNao}</strong> (${pct(m.gostaJapNao,total)}%)</div>
+                                        <div>Sem info: <strong>${m.gostaJapSemInfo}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">6) Ranking de cidades</div>
                                 ${topCidades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxCidade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">6) Perfil dos adeptos</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">7) Perfil dos adeptos</div>
                                 ${topPerfis.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxPerfil) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">7) Estados</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">8) Estados</div>
                                 ${topEstados.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxEstado) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">8) Faixa etária</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">9) Faixa etária</div>
                                 ${topIdades.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxIdade) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">9) Frequência de consumo</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">10) Frequência de consumo</div>
                                 ${topFrequencias.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxFreq) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">10) Preferência de prêmio</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">11) Preferência de prêmio</div>
                                 ${topPremios.slice(0,4).map(item => `<div class="flex justify-between text-xs py-1"><span>${item[0]}</span><strong>${item[1]}</strong></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">11) Consumo mais citado</div>
+                                <div class="text-xs font-bold uppercase text-slate-600 mb-2">12) Consumo mais citado</div>
                                 ${topConsumo.slice(0,4).map(item => `<div class="mb-2"><div class="flex justify-between text-xs"><span>${item[0]}</span><strong>${item[1]}</strong></div><div class="data-bar mt-1"><span style="width:${Math.max(6, Math.round((item[1] / maxConsumo) * 100))}%"></span></div></div>`).join('') || '<div class="text-xs text-slate-400">Sem dados.</div>'}
                             </div>
                         </div>
