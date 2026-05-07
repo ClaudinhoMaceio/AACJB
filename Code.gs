@@ -15,6 +15,20 @@ var DEFAULT_BASE_NAME = 'censo_culinaria_japonesa_respostas';
 var MAX_JSON_BYTES = 1024 * 1024 * 1024;
 /** Arquivo na mesma pasta do censo: lista de administradores (nome + senha em texto — restrinja acesso à pasta). */
 var ADMINS_FILE_NAME = 'censo_culinaria_japonesa_admins.json';
+/**
+ * Manter igual ao ADMIN_PASSWORD em index.html (para reset remoto funcionar).
+ * Opcionalmente defina só no Apps Script com a propriedade CENSO_RESET_SENHA.
+ */
+var CENSO_RESET_SENHA_PADRAO = 'Marcello';
+
+function validateResetCredential_(provided) {
+  var s = String(provided || '').trim();
+  if (!s) {
+    return false;
+  }
+  var configured = String(getPropsStore_().getProperty('CENSO_RESET_SENHA') || CENSO_RESET_SENHA_PADRAO || '').trim();
+  return configured === s;
+}
 
 function getPropsStore_() {
   var props = null;
@@ -245,8 +259,11 @@ function saveAdmins(admins) {
   }
 }
 
-/** Expõe limpeza do JSON de respostas para o front-end (zera cadastros, mantém admins). */
-function resetCensusResponses() {
+/** Limpa respostas; exige a mesma senha do ADMIN_PASSWORD no front (ou CENSO_RESET_SENHA nas propriedades). */
+function resetCensusResponses(resetSecret) {
+  if (!validateResetCredential_(resetSecret)) {
+    throw new Error('Credencial de reset invalida ou ausente.');
+  }
   return limparBancoCensoAgora();
 }
 
@@ -463,6 +480,16 @@ function doGet(e) {
       return jsonOutput_({ ok: true, data: getAdmins() });
     }
 
+    if (action === 'resetResponses') {
+      try {
+        var secGet = String(p.resetSecret || p.token || '').trim();
+        var outReset = resetCensusResponses(secGet);
+        return jsonOutput_(outReset);
+      } catch (errR) {
+        return jsonOutput_({ ok: false, error: String(errR && errR.message ? errR.message : errR) });
+      }
+    }
+
     return jsonOutput_({ ok: false, error: 'Acao GET invalida.' });
   } catch (error) {
     return jsonOutput_({ ok: false, error: String(error && error.message ? error.message : error) });
@@ -495,7 +522,12 @@ function doPost(e) {
     }
 
     if (action === 'resetResponses') {
-      return jsonOutput_(resetCensusResponses());
+      try {
+        var secPost = String(payload.resetSecret || payload.adminPassword || '').trim();
+        return jsonOutput_(resetCensusResponses(secPost));
+      } catch (errP) {
+        return jsonOutput_({ ok: false, error: String(errP && errP.message ? errP.message : errP) });
+      }
     }
 
     return jsonOutput_({ ok: false, error: 'Acao POST invalida.' });
@@ -565,25 +597,20 @@ function limparBancoCensoAgora() {
   lock.waitLock(30000);
   try {
     var folder = getTargetFolder_();
+    var baseName = getBaseName_();
     var files = listShardFiles_(folder);
-    var mainFile = null;
-
-    if (!files.length) {
-      mainFile = ensureFirstShard_(folder);
-    } else {
-      mainFile = files[0];
-      for (var i = 1; i < files.length; i++) {
-        try {
-          files[i].setTrashed(true);
-        } catch (_) {}
-      }
+    /** Envia todos os fragmentos (.json base e _partXXX) para lixeira e recria um arquivo novo vazio ([ ]). Evita ficar só limpando o “primeiro” shard e manter dados noutros. */
+    var i;
+    for (i = 0; i < files.length; i++) {
+      try {
+        files[i].setTrashed(true);
+      } catch (_) {}
     }
-
-    mainFile.setContent('[]');
+    var novo = folder.createFile(baseName + '.json', '[]', MimeType.PLAIN_TEXT);
     return {
       ok: true,
-      message: 'Banco do censo limpo com sucesso.',
-      fileName: mainFile.getName(),
+      message: 'Banco do censo limpo com sucesso (arquivos antigos para a lixeira; arquivo novo criado).',
+      fileName: novo.getName(),
       folderId: folder.getId()
     };
   } finally {

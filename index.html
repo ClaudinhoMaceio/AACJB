@@ -407,6 +407,7 @@
 
     <script>
         // Configurações Iniciais
+        /** Deve coincidir com CENSO_RESET_SENHA_PADRAO (ou propriedade CENSO_RESET_SENHA) em Code.gs para o reset no Drive funcionar. */
         const ADMIN_PASSWORD = "Marcello";
         /**
          * Conexão Google Apps Script ↔ pasta do Drive (JSON).
@@ -986,7 +987,9 @@
                 state.adminMailer = state.adminMailer || {};
                 state.adminMailer.selectedIds = {};
                 render();
-                alert('Cadastros zerados. O JSON de respostas foi limpo (ou o pedido foi enviado — aguarde e use \u0022Atualizar JSON\u0022).');
+                alert(
+                    'Operação concluída neste navegador. No Google Drive confira um arquivo novo \u0022censo_culinaria_japonesa_respostas.json\u0022 (os antigos vão para a lixeira). O arquivo \u0022censo_culinaria_japonesa_admins.json\u0022 não é apagado. Use \u0022Atualizar JSON\u0022 no painel ou atualize a pasta no Drive.'
+                );
             }
 
             if (isAppsScript()) {
@@ -999,16 +1002,35 @@
                         render();
                         alert('Falha ao limpar o banco: ' + scriptRunError(err));
                     })
-                    .resetCensusResponses();
+                    .resetCensusResponses(ADMIN_PASSWORD);
                 return;
             }
             if (useRemoteBackend()) {
-                fetch(WEB_APP_URL, {
-                    method: 'POST',
+                var hasQueryReset = WEB_APP_URL.indexOf('?') !== -1;
+                var resetUrl =
+                    WEB_APP_URL +
+                    (hasQueryReset ? '&' : '?') +
+                    'action=resetResponses&resetSecret=' +
+                    encodeURIComponent(ADMIN_PASSWORD) +
+                    '&_=' +
+                    Date.now();
+                fetch(resetUrl, {
+                    method: 'GET',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'resetResponses' })
+                    cache: 'no-store',
+                    credentials: 'omit'
                 })
+                    .then(function () {
+                        return fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: 'resetResponses',
+                                resetSecret: ADMIN_PASSWORD
+                            })
+                        });
+                    })
                     .then(function () {
                         afterLocalClear();
                     })
@@ -1975,21 +1997,6 @@ Estamos enviando seu material agora.`;
 
                             ${state.formData.gostaComidaJaponesa === 'Sim' ? `
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">2. CEP de onde você está respondendo ao censo</label>
-                                <p class="text-xs text-gray-500 -mt-1">Ao completar os 8 dígitos, cidade e UF são atualizadas automaticamente (consulta ViaCEP).</p>
-                                <label class="block text-xs font-bold text-gray-600" for="inp-cep-censo">CEP</label>
-                                <input id="inp-cep-censo" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" oninput="handleCepInput(this.value)" onblur="handleCepBlur()" value="${state.formData.cep || ''}" placeholder="00000-000" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                <p class="text-xs mt-1 ${state.cepLookup.status === 'loading' ? 'text-green-800' : state.cepLookup.status === 'ok' ? 'text-green-700' : state.cepLookup.status === 'erro' ? 'text-red-600' : 'text-gray-500'}" role="status" aria-live="polite">${state.cepLookup.message ? state.cepLookup.message : '\u00A0'}</p>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                                    <input type="text" oninput="handleInputChange('cidade', this.value); handleInputChange('cidadeMora', this.value);" value="${state.formData.cidadeMora || state.formData.cidade || ''}" placeholder="Cidade" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                    <select onchange="handleInputChange('estado', this.value); handleInputChange('estadoMora', this.value);" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
-                                        <option value="">Estado (UF)</option>
-                                        ${estados.map(e => `<option value="${e}" ${(state.formData.estadoMora || state.formData.estado) === e ? 'selected' : ''}>${e}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
                                 <label class="block font-bold text-gray-700">3. Qual sua relação com a culinária japonesa?</label>
                                 <div class="space-y-2">
                                     ${['Curto, mas sem paixão extrema', 'Nunca experimentei, mas gostaria', 'Gosto muito — amo', 'Sou fanático e adepto — até faço em casa'].map(opt => `
@@ -2049,7 +2056,26 @@ Estamos enviando seu material agora.`;
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block font-bold text-gray-700">10. CPF</label>
+                                <label class="block font-bold text-gray-700">10. CEP de onde você está respondendo ao censo</label>
+                                <p class="text-xs text-gray-500 -mt-1">Ao completar os 8 dígitos, cidade e UF são atualizadas automaticamente (consulta ViaCEP).</p>
+                                <label class="block text-xs font-bold text-gray-600" for="inp-cep-censo">CEP</label>
+                                <input id="inp-cep-censo" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" oninput="handleCepInput(this.value)" onblur="handleCepBlur()" value="${state.formData.cep || ''}" placeholder="00000-000" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                <p class="text-xs mt-1 ${state.cepLookup.status === 'loading' ? 'text-green-800' : state.cepLookup.status === 'ok' ? 'text-green-700' : state.cepLookup.status === 'erro' ? 'text-red-600' : 'text-gray-500'}" role="status" aria-live="polite">${state.cepLookup.message ? state.cepLookup.message : '\u00A0'}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                                    <input type="text" oninput="handleInputChange('cidade', this.value); handleInputChange('cidadeMora', this.value);" value="${state.formData.cidadeMora || state.formData.cidade || ''}" placeholder="Cidade" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <select onchange="handleInputChange('estado', this.value); handleInputChange('estadoMora', this.value);" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                        <option value="">Estado (UF)</option>
+                                        ${estados.map(e => `<option value="${e}" ${(state.formData.estadoMora || state.formData.estado) === e ? 'selected' : ''}>${e}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <input type="text" oninput="handleInputChange('enderecoLogradouro', this.value); handleInputChange('enderecoRua', this.value);" value="${state.formData.enderecoLogradouro || state.formData.enderecoRua || ''}" placeholder="Endereço (logradouro)" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                    <input type="text" oninput="handleInputChange('enderecoNumero', this.value)" value="${state.formData.enderecoNumero || ''}" placeholder="Número" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block font-bold text-gray-700">11. CPF</label>
                                 <input type="text" oninput="handleInputChange('cpf', this.value)" value="${state.formData.cpf}" placeholder="000.000.000-00" class="w-full min-w-0 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#bc002d] outline-none">
                             </div>
 
@@ -2306,7 +2332,7 @@ Estamos enviando seu material agora.`;
                 <div class="space-y-6 fade-up max-w-3xl">
                     <div class="rounded-2xl border-2 border-red-600 bg-red-950/30 p-5 text-red-100">
                         <h2 class="text-lg font-bold text-red-400 flex items-center gap-2"><i data-lucide="trash-2" class="w-5 h-5"></i> Zerar todos os cadastros do censo</h2>
-                        <p class="text-sm leading-relaxed mt-3"><strong class="text-white">Atenção (lembrete em vermelho):</strong> após confirmar esta limpeza, <strong>todos os participantes são apagados</strong> do arquivo JSON de respostas no Google Drive. O painel e os relatórios <strong class="underline">voltam do zero</strong>. Esta ação <strong>não remove</strong> administradores nem o arquivo <code class="bg-black/40 px-1 rounded text-[#FACC15] text-xs">censo_culinaria_japonesa_admins.json</code>.</p>
+                        <p class="text-sm leading-relaxed mt-3"><strong class="text-white">Atenção (lembrete em vermelho):</strong> após confirmar, <strong>todos os cadastros de participantes</strong> são removidos do arquivo <code class="bg-black/40 px-1 rounded text-[#FACC15] text-xs">censo_culinaria_japonesa_respostas.json</code> (e variantes _part…) no Drive: os arquivos antigos vão para a <strong>lixeira</strong> do Google e surge um arquivo novo só com [ ]. O arquivo <strong class="text-white">censo_culinaria_japonesa_admins.json</strong> (senhas dos admins) <strong>não</strong> é apagado — se só ele estiver com dados antigos é normal. Publique sempre <strong>Nova versão</strong> do Web App ao atualizar Code.gs; se mudou ADMIN_PASSWORD aqui no HTML alinhe com <code class="bg-black/40 px-1 rounded text-[#FACC15] text-xs">CENSO_RESET_SENHA</code> no Apps Script ou com o mesmo padrão do Code.gs.</p>
                         ${state.adminResetLoading ? `<p class="text-xs mt-3 flex items-center gap-2"><span class="inline-block w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></span>Processando reset…</p>` : ''}
                         <button type="button" onclick="resetCensusDataConfirm()" ${state.adminResetLoading ? 'disabled' : ''} class="mt-4 jp-btn jp-btn-rose w-full sm:w-auto ${state.adminResetLoading ? 'opacity-50 cursor-not-allowed' : ''}">Executar reset completo dos cadastros</button>
                     </div>
